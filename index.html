@@ -510,10 +510,6 @@
                     <span class="stat-number" id="totalGroups">0</span>
                     <div class="stat-label">Groups</div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="avgGroupSize">0</span>
-                    <div class="stat-label">Avg Size</div>
-                </div>
             </div>
             
             <div class="online-count" id="onlineCount">
@@ -722,7 +718,7 @@
             const groupSize = 5;
             groups = [];
             
-            // Keep players in order of registration (no shuffling)
+            // Keep players in order of registration
             for (let i = 0; i < localPlayers.length; i += groupSize) {
                 groups.push(localPlayers.slice(i, i + groupSize));
             }
@@ -793,9 +789,6 @@
         function updateStats() {
             document.getElementById('totalPlayers').textContent = localPlayers.length;
             document.getElementById('totalGroups').textContent = groups.length;
-            
-            const avgSize = groups.length > 0 ? (localPlayers.length / groups.length).toFixed(1) : 0;
-            document.getElementById('avgGroupSize').textContent = avgSize;
         }
 
         function showNotification(message, type = 'success') {
