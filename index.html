@@ -380,7 +380,7 @@
         }
 
         .floating-action:hover:not(:disabled) {
-            transform: translateY(-3px) rotate(180deg);
+            transform: translateY(-3px);
             box-shadow: 0 15px 30px rgba(33, 150, 243, 0.6);
         }
 
@@ -388,15 +388,6 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .floating-action.shuffle {
-            background: linear-gradient(45deg, #FF9800, #F57C00);
-            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
-        }
-
-        .floating-action.shuffle:hover:not(:disabled) {
-            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
         }
 
         .floating-action.clear {
@@ -529,7 +520,6 @@
     </div>
 
     <div class="floating-actions">
-        <button onclick="shuffleGroups()" class="floating-action shuffle" id="shuffleBtn" title="Shuffle Groups" disabled>🔄</button>
         <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All Players" disabled>🗑️</button>
     </div>
 
@@ -542,15 +532,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
 
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - REPLACE WITH YOUR CONFIG
         const firebaseConfig = {
-            apiKey: "AIzaSyBKHPSmLcbyZ8xItGLHZA-nEMB5E3joczw",
-            authDomain: "kingshot-vikings-event.firebaseapp.com",
-            databaseURL: "https://kingshot-vikings-event-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "kingshot-vikings-event",
-            storageBucket: "kingshot-vikings-event.firebasestorage.app",
-            messagingSenderId: "308452962352",
-            appId: "1:308452962352:web:e18535f956c3386c033df5"
+            apiKey: "YOUR_API_KEY_HERE",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Initialize Firebase
@@ -617,7 +607,6 @@
         function enableInterface() {
             document.getElementById('playerInput').disabled = false;
             document.getElementById('addBtn').disabled = false;
-            document.getElementById('shuffleBtn').disabled = false;
             document.getElementById('clearBtn').disabled = false;
             document.getElementById('playerInput').focus();
         }
@@ -713,32 +702,12 @@
             const groupSize = 5;
             groups = [];
             
-            // Shuffle players for fairness
-            const shuffledPlayers = [...localPlayers].sort(() => Math.random() - 0.5);
-            
-            for (let i = 0; i < shuffledPlayers.length; i += groupSize) {
-                groups.push(shuffledPlayers.slice(i, i + groupSize));
+            // Keep players in order of registration (no shuffling)
+            for (let i = 0; i < localPlayers.length; i += groupSize) {
+                groups.push(localPlayers.slice(i, i + groupSize));
             }
             
             updateDisplay();
-        }
-
-        async function shuffleGroups() {
-            if (localPlayers.length === 0) {
-                showNotification('No players to shuffle!', 'error');
-                return;
-            }
-            
-            reorganizeGroups();
-            showNotification('Groups have been reshuffled!', 'success');
-            
-            // Animation for all groups
-            document.querySelectorAll('.group').forEach((group, index) => {
-                setTimeout(() => {
-                    group.classList.add('updated');
-                    setTimeout(() => group.classList.remove('updated'), 600);
-                }, index * 100);
-            });
         }
 
         async function clearAllPlayers() {
