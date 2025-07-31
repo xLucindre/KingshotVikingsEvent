@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Event Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .connection-status.connecting {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            display: block;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .input-section {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .input-group {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .player-input {
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .player-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .player-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .player-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .add-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+            white-space: nowrap;
+        }
+
+        .add-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .add-btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .add-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .groups-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .group {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800, #E91E63);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .group-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .group-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .group-count {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .player-list {
+            list-style: none;
+        }
+
+        .player-item {
+            background: rgba(255, 255, 255, 0.15);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .player-item.highlight {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+            animation: highlight 2s ease-out;
+        }
+
+        @keyframes highlight {
+            0% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .player-name {
+            color: white;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .remove-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .remove-btn:hover:not(:disabled) {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .remove-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        .loading-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 40px 20px;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .floating-actions {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .floating-action {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 20px rgba(33, 150, 243, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .floating-action:hover:not(:disabled) {
+            transform: translateY(-3px) rotate(180deg);
+            box-shadow: 0 15px 30px rgba(33, 150, 243, 0.6);
+        }
+
+        .floating-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .floating-action.shuffle {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .floating-action.shuffle:hover:not(:disabled) {
+            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
+        }
+
+        .floating-action.clear {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 10px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .floating-action.clear:hover:not(:disabled) {
+            box-shadow: 0 15px 30px rgba(244, 67, 54, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-group {
+                max-width: none;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .groups-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .floating-actions {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .floating-action {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @keyframes groupPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .group.updated {
+            animation: groupPulse 0.6s ease-in-out;
+        }
+
+        .online-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Gaming Event Manager</h1>
+            <p>Real-time Group Distribution for Your Event</p>
+            
+            <div id="connectionStatus" class="connection-status connecting">
+                <div class="status-dot"></div>
+                <span>Connecting to Firebase...</span>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalPlayers">0</span>
+                    <div class="stat-label">Players</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalGroups">0</span>
+                    <div class="stat-label">Groups</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="avgGroupSize">0</span>
+                    <div class="stat-label">Avg Size</div>
+                </div>
+            </div>
+            
+            <div class="online-count" id="onlineCount">
+                👥 Loading online players...
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-form">
+                <div class="input-group">
+                    <input type="text" id="playerInput" class="player-input" placeholder="Enter your player name..." maxlength="50" disabled>
+                </div>
+                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>➕ Join Event</button>
+            </div>
+        </div>
+
+        <div id="groupsContainer" class="groups-container">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <h3>Loading Event Data...</h3>
+                <p>Connecting to Firebase Realtime Database</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-actions">
+        <button onclick="shuffleGroups()" class="floating-action shuffle" id="shuffleBtn" title="Shuffle Groups" disabled>🔄</button>
+        <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All Players" disabled>🗑️</button>
+    </div>
+
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKHPSmLcbyZ8xItGLHZA-nEMB5E3joczw",
+            authDomain: "kingshot-vikings-event.firebaseapp.com",
+            databaseURL: "https://kingshot-vikings-event-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "kingshot-vikings-event",
+            storageBucket: "kingshot-vikings-event.firebasestorage.app",
+            messagingSenderId: "308452962352",
+            appId: "1:308452962352:web:e18535f956c3386c033df5"
+        };
+
+        // Initialize Firebase
+        let database;
+        let isConnected = false;
+        let playersRef;
+        let connectionRef;
+
+        function initializeFirebase() {
+            try {
+                if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE") {
+                    throw new Error("Firebase configuration not set. Please update firebaseConfig with your project details.");
+                }
+
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                
+                // Set up connection monitoring
+                connectionRef = database.ref('.info/connected');
+                connectionRef.on('value', (snapshot) => {
+                    isConnected = snapshot.val() === true;
+                    updateConnectionStatus();
+                });
+
+                // Set up players reference
+                playersRef = database.ref('event/players');
+                
+                // Listen for player changes
+                playersRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    const playersList = data ? Object.keys(data) : [];
+                    updatePlayersFromFirebase(playersList);
+                });
+
+                // Enable inputs when connected
+                enableInterface();
+                showNotification('Connected to Firebase!', 'success');
+
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                showNotification('Firebase connection failed. Check console for details.', 'error');
+                updateConnectionStatus(false, error.message);
+                
+                // Show fallback mode
+                setTimeout(() => {
+                    showFallbackMode();
+                }, 2000);
+            }
+        }
+
+        function showFallbackMode() {
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>⚠️ Offline Mode</h3>
+                    <p>Firebase is not configured. Running in local mode.</p>
+                    <p>Players added here won't be shared with others.</p>
+                </div>
+            `;
+            enableInterface();
+            updateConnectionStatus(false, 'Running in offline mode');
+        }
+
+        function enableInterface() {
+            document.getElementById('playerInput').disabled = false;
+            document.getElementById('addBtn').disabled = false;
+            document.getElementById('shuffleBtn').disabled = false;
+            document.getElementById('clearBtn').disabled = false;
+            document.getElementById('playerInput').focus();
+        }
+
+        function updateConnectionStatus(connected = isConnected, message = '') {
+            const statusEl = document.getElementById('connectionStatus');
+            const statusText = statusEl.querySelector('span');
+            
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusText.textContent = '🟢 Connected - Real-time sync active';
+            } else if (message) {
+                statusEl.className = 'connection-status disconnected';
+                statusText.textContent = `🔴 ${message}`;
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusText.textContent = '🔴 Disconnected - Changes not synced';
+            }
+        }
+
+        let localPlayers = [];
+        let groups = [];
+
+        function updatePlayersFromFirebase(playersList) {
+            localPlayers = playersList;
+            reorganizeGroups();
+            updateOnlineCount();
+        }
+
+        function updateOnlineCount() {
+            const count = localPlayers.length;
+            const countEl = document.getElementById('onlineCount');
+            countEl.textContent = `👥 ${count} player${count !== 1 ? 's' : ''} registered`;
+        }
+
+        async function addPlayer() {
+            const input = document.getElementById('playerInput');
+            const playerName = input.value.trim();
+            
+            if (playerName === '') {
+                showNotification('Please enter a player name!', 'error');
+                return;
+            }
+            
+            if (localPlayers.some(p => p.toLowerCase() === playerName.toLowerCase())) {
+                showNotification('This player is already registered!', 'error');
+                return;
+            }
+
+            try {
+                if (isConnected && playersRef) {
+                    // Add to Firebase
+                    await playersRef.child(playerName).set(true);
+                    showNotification(`${playerName} joined the event!`, 'success');
+                } else {
+                    // Fallback to local mode
+                    localPlayers.push(playerName);
+                    reorganizeGroups();
+                    showNotification(`${playerName} added locally (offline mode)`, 'info');
+                }
+                
+                input.value = '';
+                input.focus();
+                
+            } catch (error) {
+                console.error('Error adding player:', error);
+                showNotification('Failed to add player. Please try again.', 'error');
+            }
+        }
+
+        async function removePlayer(playerName) {
+            try {
+                if (isConnected && playersRef) {
+                    // Remove from Firebase
+                    await playersRef.child(playerName).remove();
+                    showNotification(`${playerName} left the event`, 'info');
+                } else {
+                    // Fallback to local mode
+                    const index = localPlayers.indexOf(playerName);
+                    if (index > -1) {
+                        localPlayers.splice(index, 1);
+                        reorganizeGroups();
+                        showNotification(`${playerName} removed locally`, 'info');
+                    }
+                }
+            } catch (error) {
+                console.error('Error removing player:', error);
+                showNotification('Failed to remove player. Please try again.', 'error');
+            }
+        }
+
+        function reorganizeGroups() {
+            const groupSize = 5;
+            groups = [];
+            
+            // Shuffle players for fairness
+            const shuffledPlayers = [...localPlayers].sort(() => Math.random() - 0.5);
+            
+            for (let i = 0; i < shuffledPlayers.length; i += groupSize) {
+                groups.push(shuffledPlayers.slice(i, i + groupSize));
+            }
+            
+            updateDisplay();
+        }
+
+        async function shuffleGroups() {
+            if (localPlayers.length === 0) {
+                showNotification('No players to shuffle!', 'error');
+                return;
+            }
+            
+            reorganizeGroups();
+            showNotification('Groups have been reshuffled!', 'success');
+            
+            // Animation for all groups
+            document.querySelectorAll('.group').forEach((group, index) => {
+                setTimeout(() => {
+                    group.classList.add('updated');
+                    setTimeout(() => group.classList.remove('updated'), 600);
+                }, index * 100);
+            });
+        }
+
+        async function clearAllPlayers() {
+            if (localPlayers.length === 0) {
+                showNotification('No players to clear!', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to remove ALL players from the event?')) {
+                return;
+            }
+
+            try {
+                if (isConnected && playersRef) {
+                    // Clear Firebase
+                    await playersRef.remove();
+                    showNotification('All players have been removed from the event', 'info');
+                } else {
+                    // Clear local
+                    localPlayers = [];
+                    reorganizeGroups();
+                    showNotification('All players removed locally', 'info');
+                }
+            } catch (error) {
+                console.error('Error clearing players:', error);
+                showNotification('Failed to clear players. Please try again.', 'error');
+            }
+        }
+
+        function updateDisplay() {
+            const container = document.getElementById('groupsContainer');
+            
+            if (localPlayers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Players Registered</h3>
+                        <p>Add players to automatically create groups!</p>
+                        <p>Groups will be balanced with up to 5 players each.</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = groups.map((group, index) => `
+                    <div class="group">
+                        <div class="group-header">
+                            <div class="group-title">Group ${index + 1}</div>
+                            <div class="group-count">${group.length} player${group.length !== 1 ? 's' : ''}</div>
+                        </div>
+                        <ul class="player-list">
+                            ${group.map(player => `
+                                <li class="player-item">
+                                    <span class="player-name">${player}</span>
+                                    <button onclick="removePlayer('${player}')" class="remove-btn" ${!isConnected ? 'title="Offline mode"' : ''}>✕</button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+            }
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalPlayers').textContent = localPlayers.length;
+            document.getElementById('totalGroups').textContent = groups.length;
+            
+            const avgSize = groups.length > 0 ? (localPlayers.length / groups.length).toFixed(1) : 0;
+            document.getElementById('avgGroupSize').textContent = avgSize;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            
+            // Color based on type
+            if (type === 'error') {
+                notification.style.background = 'rgba(244, 67, 54, 0.9)';
+            } else if (type === 'info') {
+                notification.style.background = 'rgba(33, 150, 243, 0.9)';
+            } else {
+                notification.style.background = 'rgba(76, 175, 80, 0.9)';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Event listeners
+        document.getElementById('playerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPlayer();
+            }
+        });
+
+        // Initialize Firebase when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+        });
+
+        // Handle visibility change to reconnect if needed
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && !isConnected) {
+                // Try to reconnect when tab becomes visible
+                setTimeout(initializeFirebase, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
