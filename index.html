@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaming Event Manager</title>
+    <title>Kingshot Vikings Event</title>
     <style>
         * {
             margin: 0;
@@ -58,6 +58,21 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            height: 50px;
+            width: auto;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .header-logo:hover {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .header p {
@@ -402,6 +417,12 @@
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header-logo {
+                height: 40px;
             }
             
             .input-form {
@@ -473,8 +494,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎮 Gaming Event Manager</h1>
-            <p>Real-time Group Distribution for Your Event</p>
+            <h1><img src="logo.png" class="header-logo"> Kingshot Vikings Event</h1>
             
             <div id="connectionStatus" class="connection-status connecting">
                 <div class="status-dot"></div>
