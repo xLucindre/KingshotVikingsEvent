@@ -75,9 +75,29 @@
             transform: scale(1.1) rotate(5deg);
         }
 
-        .header p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
+        .admin-status {
+            color: #4CAF50;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .admin-status.active {
+            display: flex;
+        }
+
+        .admin-status::before {
+            content: '👑';
+        }
+
+        .admin-user {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
         }
 
         .connection-status {
@@ -150,6 +170,88 @@
             margin-top: 5px;
         }
 
+        .admin-section {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .admin-section.show {
+            display: block;
+        }
+
+        .admin-section h3 {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .admin-login {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .admin-form-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .admin-login input {
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 193, 7, 0.5);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 0.9rem;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-login input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .admin-login input:focus {
+            outline: none;
+            border-color: rgba(255, 193, 7, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .admin-login button {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .admin-login button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 152, 0, 0.4);
+        }
+
+        .admin-login button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .input-section {
             backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.1);
@@ -163,7 +265,7 @@
         .input-form {
             display: flex;
             gap: 15px;
-            align-items: center;
+            align-items: end;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -171,7 +273,15 @@
         .input-group {
             position: relative;
             flex: 1;
-            max-width: 400px;
+            max-width: 300px;
+        }
+
+        .input-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 500;
         }
 
         .player-input {
@@ -201,6 +311,35 @@
             cursor: not-allowed;
         }
 
+        .rally-select {
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .rally-select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .rally-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .rally-select option {
+            background: #333;
+            color: white;
+        }
+
         .add-btn {
             padding: 15px 30px;
             background: linear-gradient(45deg, #4CAF50, #45a049);
@@ -213,6 +352,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
             white-space: nowrap;
+            height: fit-content;
         }
 
         .add-btn:hover:not(:disabled) {
@@ -256,7 +396,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800, #E91E63);
+            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800, #E91E63, #9C27B0);
             border-radius: 20px 20px 0 0;
         }
 
@@ -280,6 +420,18 @@
         .group-count {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
+        }
+
+        .rally-badge {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 8px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
         }
 
         .player-list {
@@ -314,10 +466,20 @@
             100% { transform: scale(1); }
         }
 
+        .player-info {
+            flex: 1;
+        }
+
         .player-name {
             color: white;
             font-weight: 500;
-            flex: 1;
+            display: block;
+        }
+
+        .player-rally {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            margin-top: 2px;
         }
 
         .remove-btn {
@@ -341,6 +503,15 @@
             opacity: 0.3;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .remove-btn.own-player {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            opacity: 1;
+        }
+
+        .remove-btn.admin {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
         }
 
         .empty-state {
@@ -414,6 +585,15 @@
             box-shadow: 0 15px 30px rgba(244, 67, 54, 0.6);
         }
 
+        .floating-action.admin-toggle {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .floating-action.admin-toggle:hover:not(:disabled) {
+            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -453,6 +633,14 @@
                 height: 50px;
                 font-size: 1.2rem;
             }
+
+            .admin-form-row {
+                flex-direction: column;
+            }
+
+            .admin-login input {
+                min-width: 100%;
+            }
         }
 
         .notification {
@@ -489,12 +677,23 @@
             font-size: 0.8rem;
             margin-top: 5px;
         }
+
+        .auth-error {
+            color: #f44336;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1><img src="logo.png" class="header-logo"> Kingshot Vikings Event</h1>
+            <div class="admin-status" id="adminStatus">
+                Admin Mode Active
+                <span class="admin-user" id="adminUser"></span>
+            </div>
             
             <div id="connectionStatus" class="connection-status connecting">
                 <div class="status-dot"></div>
@@ -508,7 +707,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-number" id="totalGroups">0</span>
-                    <div class="stat-label">Groups</div>
+                    <div class="stat-label">Rally Groups</div>
                 </div>
             </div>
             
@@ -517,12 +716,38 @@
             </div>
         </div>
 
+        <div class="admin-section" id="adminSection">
+            <h3>🛡️ Admin Access</h3>
+            <div class="admin-login">
+                <div class="admin-form-row">
+                    <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
+                    <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
+                </div>
+                <div class="admin-form-row">
+                    <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
+                    <button onclick="adminLogout()" id="adminLogoutBtn" style="display: none;">🚪 Logout</button>
+                </div>
+                <div class="auth-error" id="authError"></div>
+            </div>
+        </div>
+
         <div class="input-section">
             <div class="input-form">
                 <div class="input-group">
-                    <input type="text" id="playerInput" class="player-input" placeholder="Enter your player name..." maxlength="50" disabled>
+                    <label class="input-label">Player Name</label>
+                    <input type="text" id="playerInput" class="player-input" placeholder="Enter your name..." maxlength="50" disabled>
                 </div>
-                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>➕ Join Event</button>
+                <div class="input-group">
+                    <label class="input-label">Rally Size</label>
+                    <select id="rallySelect" class="rally-select" disabled>
+                        <option value="1">1 Rally</option>
+                        <option value="2">2 Rallies</option>
+                        <option value="3" selected>3 Rallies</option>
+                        <option value="4">4 Rallies</option>
+                        <option value="5">5 Rallies</option>
+                    </select>
+                </div>
+                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>⚔️ Join Event</button>
             </div>
         </div>
 
@@ -536,7 +761,8 @@
     </div>
 
     <div class="floating-actions">
-        <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All Players" disabled>🗑️</button>
+        <button onclick="toggleAdminSection()" class="floating-action admin-toggle" id="adminToggleBtn" title="Admin Login">👑</button>
+        <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All Players (Admin Only)" disabled style="display: none;">🗑️</button>
     </div>
 
     <div id="notification" class="notification">
@@ -546,6 +772,7 @@
     <!-- Firebase SDK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
 
     <script>
         // Firebase Configuration
@@ -559,21 +786,42 @@
             appId: "1:308452962352:web:e18535f956c3386c033df5"
         };
 
-        // Initialize Firebase
+        // Global variables
         let database;
+        let auth;
         let isConnected = false;
         let playersRef;
         let connectionRef;
+        let localPlayers = {};
+        let groups = {};
+        let isAdmin = false;
+        let currentPlayerName = '';
+        let currentAdminUser = null;
 
         function initializeFirebase() {
             try {
-                if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE") {
+                if (firebaseConfig.apiKey === "AIzaSyBKHPSmLcbyZ8xItGLHZA-nEMB5E3joczw") {
                     throw new Error("Firebase configuration not set. Please update firebaseConfig with your project details.");
                 }
 
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
+                auth = firebase.auth();
                 
+                // Set up authentication state listener
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        currentAdminUser = user;
+                        isAdmin = true;
+                        showAdminMode();
+                    } else {
+                        currentAdminUser = null;
+                        isAdmin = false;
+                        hideAdminMode();
+                    }
+                    reorganizeGroups(); // Refresh display
+                });
+
                 // Set up connection monitoring
                 connectionRef = database.ref('.info/connected');
                 connectionRef.on('value', (snapshot) => {
@@ -587,8 +835,9 @@
                 // Listen for player changes
                 playersRef.on('value', (snapshot) => {
                     const data = snapshot.val();
-                    const playersList = data ? Object.keys(data) : [];
-                    updatePlayersFromFirebase(playersList);
+                    localPlayers = data || {};
+                    reorganizeGroups();
+                    updateOnlineCount();
                 });
 
                 // Enable inputs when connected
@@ -622,8 +871,8 @@
 
         function enableInterface() {
             document.getElementById('playerInput').disabled = false;
+            document.getElementById('rallySelect').disabled = false;
             document.getElementById('addBtn').disabled = false;
-            document.getElementById('clearBtn').disabled = false;
             document.getElementById('playerInput').focus();
         }
 
@@ -643,43 +892,151 @@
             }
         }
 
-        let localPlayers = [];
-        let groups = [];
-
-        function updatePlayersFromFirebase(playersList) {
-            localPlayers = playersList;
-            reorganizeGroups();
-            updateOnlineCount();
-        }
-
         function updateOnlineCount() {
-            const count = localPlayers.length;
+            const count = Object.keys(localPlayers).length;
             const countEl = document.getElementById('onlineCount');
             countEl.textContent = `👥 ${count} player${count !== 1 ? 's' : ''} registered`;
         }
 
+        function toggleAdminSection() {
+            const section = document.getElementById('adminSection');
+            const isVisible = section.classList.contains('show');
+            
+            if (isVisible) {
+                section.classList.remove('show');
+                clearAuthError();
+            } else {
+                section.classList.add('show');
+                if (!isAdmin) {
+                    document.getElementById('adminEmail').focus();
+                }
+            }
+        }
+
+        async function adminLogin() {
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!email || !password) {
+                showAuthError('Please enter both email and password');
+                return;
+            }
+
+            try {
+                document.getElementById('adminLoginBtn').disabled = true;
+                clearAuthError();
+                
+                // Sign in with Firebase Auth
+                await auth.signInWithEmailAndPassword(email, password);
+                
+                // Clear form
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminSection').classList.remove('show');
+                
+                showNotification('Admin access granted!', 'success');
+                
+            } catch (error) {
+                console.error('Admin login error:', error);
+                
+                let errorMessage = 'Login failed. Please check your credentials.';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'Admin account not found.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Incorrect password.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Too many failed attempts. Try again later.';
+                        break;
+                }
+                
+                showAuthError(errorMessage);
+                showNotification('Admin login failed', 'error');
+            } finally {
+                document.getElementById('adminLoginBtn').disabled = false;
+            }
+        }
+
+        async function adminLogout() {
+            try {
+                await auth.signOut();
+                showNotification('Admin logged out', 'info');
+                document.getElementById('adminSection').classList.remove('show');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Logout failed', 'error');
+            }
+        }
+
+        function showAdminMode() {
+            document.getElementById('adminStatus').classList.add('active');
+            document.getElementById('adminLoginBtn').style.display = 'none';
+            document.getElementById('adminLogoutBtn').style.display = 'inline-block';
+            document.getElementById('clearBtn').style.display = 'block';
+            document.getElementById('clearBtn').disabled = false;
+            
+            if (currentAdminUser) {
+                const adminEmail = currentAdminUser.email;
+                const displayEmail = adminEmail.length > 20 ? adminEmail.substring(0, 17) + '...' : adminEmail;
+                document.getElementById('adminUser').textContent = displayEmail;
+            }
+        }
+
+        function hideAdminMode() {
+            document.getElementById('adminStatus').classList.remove('active');
+            document.getElementById('adminLoginBtn').style.display = 'inline-block';
+            document.getElementById('adminLogoutBtn').style.display = 'none';
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('adminUser').textContent = '';
+        }
+
+        function showAuthError(message) {
+            const errorEl = document.getElementById('authError');
+            errorEl.textContent = message;
+        }
+
+        function clearAuthError() {
+            document.getElementById('authError').textContent = '';
+        }
+
         async function addPlayer() {
             const input = document.getElementById('playerInput');
+            const rallySelect = document.getElementById('rallySelect');
             const playerName = input.value.trim();
+            const rallySize = parseInt(rallySelect.value);
             
             if (playerName === '') {
                 showNotification('Please enter a player name!', 'error');
                 return;
             }
             
-            if (localPlayers.some(p => p.toLowerCase() === playerName.toLowerCase())) {
+            if (localPlayers[playerName]) {
                 showNotification('This player is already registered!', 'error');
                 return;
             }
 
             try {
                 if (isConnected && playersRef) {
-                    // Add to Firebase
-                    await playersRef.child(playerName).set(true);
-                    showNotification(`${playerName} joined the event!`, 'success');
+                    // Add to Firebase with rally size and timestamp
+                    await playersRef.child(playerName).set({
+                        rallySize: rallySize,
+                        timestamp: Date.now()
+                    });
+                    currentPlayerName = playerName; // Remember current player
+                    showNotification(`${playerName} joined with ${rallySize} rallies!`, 'success');
                 } else {
                     // Fallback to local mode
-                    localPlayers.push(playerName);
+                    localPlayers[playerName] = {
+                        rallySize: rallySize,
+                        timestamp: Date.now()
+                    };
+                    currentPlayerName = playerName;
                     reorganizeGroups();
                     showNotification(`${playerName} added locally (offline mode)`, 'info');
                 }
@@ -698,15 +1055,22 @@
                 if (isConnected && playersRef) {
                     // Remove from Firebase
                     await playersRef.child(playerName).remove();
+                    
+                    if (playerName === currentPlayerName) {
+                        currentPlayerName = '';
+                    }
+                    
                     showNotification(`${playerName} left the event`, 'info');
                 } else {
                     // Fallback to local mode
-                    const index = localPlayers.indexOf(playerName);
-                    if (index > -1) {
-                        localPlayers.splice(index, 1);
-                        reorganizeGroups();
-                        showNotification(`${playerName} removed locally`, 'info');
+                    delete localPlayers[playerName];
+                    
+                    if (playerName === currentPlayerName) {
+                        currentPlayerName = '';
                     }
+                    
+                    reorganizeGroups();
+                    showNotification(`${playerName} removed locally`, 'info');
                 }
             } catch (error) {
                 console.error('Error removing player:', error);
@@ -714,21 +1078,44 @@
             }
         }
 
+        function canRemovePlayer(playerName) {
+            return isAdmin || playerName === currentPlayerName;
+        }
+
         function reorganizeGroups() {
-            const groupSize = 5;
-            groups = [];
+            groups = {};
             
-            // Keep players in order of registration
-            for (let i = 0; i < localPlayers.length; i += groupSize) {
-                groups.push(localPlayers.slice(i, i + groupSize));
-            }
+            // Group players by rally size
+            Object.entries(localPlayers).forEach(([playerName, playerData]) => {
+                const rallySize = playerData.rallySize || 3;
+                
+                if (!groups[rallySize]) {
+                    groups[rallySize] = [];
+                }
+                
+                groups[rallySize].push({
+                    name: playerName,
+                    rallySize: rallySize,
+                    timestamp: playerData.timestamp || 0
+                });
+            });
+            
+            // Sort players within each group by timestamp (first come, first served)
+            Object.keys(groups).forEach(rallySize => {
+                groups[rallySize].sort((a, b) => a.timestamp - b.timestamp);
+            });
             
             updateDisplay();
         }
 
         async function clearAllPlayers() {
-            if (localPlayers.length === 0) {
+            if (Object.keys(localPlayers).length === 0) {
                 showNotification('No players to clear!', 'error');
+                return;
+            }
+
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
                 return;
             }
 
@@ -740,10 +1127,12 @@
                 if (isConnected && playersRef) {
                     // Clear Firebase
                     await playersRef.remove();
+                    currentPlayerName = '';
                     showNotification('All players have been removed from the event', 'info');
                 } else {
                     // Clear local
-                    localPlayers = [];
+                    localPlayers = {};
+                    currentPlayerName = '';
                     reorganizeGroups();
                     showNotification('All players removed locally', 'info');
                 }
@@ -756,39 +1145,54 @@
         function updateDisplay() {
             const container = document.getElementById('groupsContainer');
             
-            if (localPlayers.length === 0) {
+            if (Object.keys(localPlayers).length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
-                        <p>Add players to automatically create groups!</p>
-                        <p>Groups will be balanced with up to 5 players each.</p>
+                        <p>Add players to automatically create rally groups!</p>
+                        <p>Players will be grouped by their rally size (1-5 rallies).</p>
                     </div>
                 `;
             } else {
-                container.innerHTML = groups.map((group, index) => `
-                    <div class="group">
-                        <div class="group-header">
-                            <div class="group-title">Group ${index + 1}</div>
-                            <div class="group-count">${group.length} player${group.length !== 1 ? 's' : ''}</div>
+                const rallyGroups = Object.keys(groups).sort((a, b) => parseInt(b) - parseInt(a));
+                
+                container.innerHTML = rallyGroups.map(rallySize => {
+                    const players = groups[rallySize];
+                    return `
+                        <div class="group">
+                            <div class="group-header">
+                                <div class="group-title">Rally Group ${rallySize}</div>
+                                <div class="rally-badge">${rallySize} Rally${rallySize > 1 ? 's' : ''}</div>
+                                <div class="group-count">${players.length} player${players.length !== 1 ? 's' : ''}</div>
+                            </div>
+                            <ul class="player-list">
+                                ${players.map(player => {
+                                    const canRemove = canRemovePlayer(player.name);
+                                    const isOwnPlayer = player.name === currentPlayerName;
+                                    const buttonClass = isAdmin ? 'admin' : (isOwnPlayer ? 'own-player' : '');
+                                    
+                                    return `
+                                        <li class="player-item">
+                                            <div class="player-info">
+                                                <span class="player-name">${player.name}</span>
+                                                <div class="player-rally">${player.rallySize} rally capacity</div>
+                                            </div>
+                                            ${canRemove ? `<button onclick="removePlayer('${player.name}')" class="remove-btn ${buttonClass}" title="${isAdmin ? 'Admin: Remove player' : 'Remove yourself'}">✕</button>` : ''}
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
                         </div>
-                        <ul class="player-list">
-                            ${group.map(player => `
-                                <li class="player-item">
-                                    <span class="player-name">${player}</span>
-                                    <button onclick="removePlayer('${player}')" class="remove-btn" ${!isConnected ? 'title="Offline mode"' : ''}>✕</button>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
             
             updateStats();
         }
 
         function updateStats() {
-            document.getElementById('totalPlayers').textContent = localPlayers.length;
-            document.getElementById('totalGroups').textContent = groups.length;
+            document.getElementById('totalPlayers').textContent = Object.keys(localPlayers).length;
+            document.getElementById('totalGroups').textContent = Object.keys(groups).length;
         }
 
         function showNotification(message, type = 'success') {
@@ -817,6 +1221,18 @@
         document.getElementById('playerInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 addPlayer();
+            }
+        });
+
+        document.getElementById('adminEmail').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('adminPassword').focus();
+            }
+        });
+
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adminLogin();
             }
         });
 
