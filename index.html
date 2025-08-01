@@ -400,6 +400,20 @@
             border-radius: 20px 20px 0 0;
         }
 
+        .group.offline-group {
+            border: 2px solid rgba(108, 117, 125, 0.5);
+            background: rgba(108, 117, 125, 0.05);
+        }
+
+        .group.offline-group::before {
+            background: linear-gradient(90deg, #6c757d, #495057);
+        }
+
+        .rally-badge.offline-badge {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+        }
+
         .group.waiting {
             border: 2px dashed rgba(255, 152, 0, 0.5);
             background: rgba(255, 152, 0, 0.05);
@@ -716,7 +730,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-number" id="totalGroups">0</span>
-                    <div class="stat-label">Rally Groups</div>
+                    <div class="stat-label">Groups</div>
                 </div>
             </div>
             
@@ -747,13 +761,15 @@
                     <input type="text" id="playerInput" class="player-input" placeholder="Enter your name..." maxlength="50" disabled>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">Rally Size</label>
+                    <label class="input-label">March limit</label>
                     <select id="rallySelect" class="rally-select" disabled>
-                        <option value="1">1 Rally</option>
-                        <option value="2">2 Rallies</option>
-                        <option value="3" selected>3 Rallies</option>
-                        <option value="4">4 Rallies</option>
-                        <option value="5">5 Rallies</option>
+                        <option value="1">1 march</option>
+                        <option value="2">2 marches</option>
+                        <option value="3" selected>3 marches</option>
+                        <option value="4">4 marches</option>
+                        <option value="5">5 marches</option>
+                        <option value="6">6 marches</option>
+                        <option value="offline">Offline Player</option>
                     </select>
                 </div>
                 <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>⚔️ Join Event</button>
@@ -876,7 +892,7 @@
                         <h3>⚠️ Offline Mode</h3>
                         <p>Firebase is not configured. Running in local mode.</p>
                         <p>Players added here won't be shared with others.</p>
-                        <p>Groups match rally capacity: 5 rallies = 5-player groups, etc.</p>
+                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
                     </div>
                 `;
                 updateConnectionStatus(false, 'Running in offline mode');
@@ -884,8 +900,8 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
-                        <p>Add players to automatically create rally groups!</p>
-                        <p>Group sizes match rally capacity: 5 rallies = 5-player groups, 4 rallies = 4-player groups, etc.</p>
+                        <p>Add players to automatically create groups!</p>
+                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
                     </div>
                 `;
                 updateConnectionStatus(false, 'Loading...');
@@ -1034,7 +1050,7 @@
             const input = document.getElementById('playerInput');
             const rallySelect = document.getElementById('rallySelect');
             const playerName = input.value.trim();
-            const rallySize = parseInt(rallySelect.value);
+            const rallyValue = rallySelect.value;
             
             if (playerName === '') {
                 showNotification('Please enter a player name!', 'error');
@@ -1050,24 +1066,27 @@
                 if (isConnected && playersRef) {
                     // Add to Firebase with rally size and timestamp
                     await playersRef.child(playerName).set({
-                        rallySize: rallySize,
+                        rallySize: rallyValue,
                         timestamp: Date.now()
                     });
                     currentPlayerName = playerName; // Remember current player
-                    showNotification(`${playerName} joined with ${rallySize} rallies!`, 'success');
+                    
+                    const displayText = rallyValue === 'offline' ? 'offline player' : `${rallyValue} rallies`;
+                    showNotification(`${playerName} joined as ${displayText}!`, 'success');
                 } else {
                     // Fallback to local mode
                     localPlayers[playerName] = {
-                        rallySize: rallySize,
+                        rallySize: rallyValue,
                         timestamp: Date.now()
                     };
                     currentPlayerName = playerName;
                     reorganizeGroups();
                     
+                    const displayText = rallyValue === 'offline' ? 'offline player' : `${rallyValue} rallies`;
                     if (isAdmin) {
                         showNotification(`${playerName} added locally (offline mode)`, 'info');
                     } else {
-                        showNotification(`${playerName} joined with ${rallySize} rallies!`, 'success');
+                        showNotification(`${playerName} joined as ${displayText}!`, 'success');
                     }
                 }
                 
@@ -1144,21 +1163,34 @@
             
             // Create groups with size matching rally capacity
             // Process rally sizes from highest to lowest for better organization
-            const rallySizes = Object.keys(playersByRallySize).sort((a, b) => parseInt(b) - parseInt(a));
+            const rallySizes = Object.keys(playersByRallySize).sort((a, b) => {
+                // Put offline at the end
+                if (a === 'offline') return 1;
+                if (b === 'offline') return -1;
+                return parseInt(b) - parseInt(a);
+            });
             
             rallySizes.forEach(rallySize => {
                 const players = playersByRallySize[rallySize];
-                const groupSize = parseInt(rallySize); // Group size matches rally size!
+                let groupSize;
                 
-                // Split players into groups matching their rally capacity
+                // Determine group size based on rally type
+                if (rallySize === 'offline') {
+                    groupSize = 4; // Offline players in 4-player groups
+                } else {
+                    groupSize = parseInt(rallySize); // Group size matches rally size
+                }
+                
+                // Split players into groups matching their capacity
                 for (let i = 0; i < players.length; i += groupSize) {
                     const group = players.slice(i, i + groupSize);
                     groups.push({
                         players: group,
-                        rallySize: parseInt(rallySize),
+                        rallySize: rallySize,
                         groupNumber: groups.length + 1,
                         maxSize: groupSize,
-                        isFull: group.length === groupSize
+                        isFull: group.length === groupSize,
+                        isOffline: rallySize === 'offline'
                     });
                 }
             });
@@ -1213,15 +1245,15 @@
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
                         <p>Add players to automatically create rally groups!</p>
-                        <p>Group sizes match rally capacity: 5 rallies = 5-player groups, 4 rallies = 4-player groups, etc.</p>
+                        <p>Rally sizes 1-6 create matching group sizes. Offline players form 4-player groups.</p>
                     </div>
                 `;
             } else {
                 container.innerHTML = groups.map(group => `
-                    <div class="group ${group.isFull ? '' : 'waiting'}">
+                    <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''}">
                         <div class="group-header">
                             <div class="group-title">Group ${group.groupNumber}</div>
-                            <div class="rally-badge">${group.rallySize} Rally${group.rallySize > 1 ? 's' : ''}</div>
+                            <div class="rally-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.rallySize} Rally${group.rallySize > 1 ? 's' : ''}`}</div>
                             <div class="group-count">
                                 ${group.players.length}/${group.maxSize} players
                                 ${group.isFull ? '✅' : '⏳'}
@@ -1233,7 +1265,7 @@
                                     <li class="player-item">
                                         <div class="player-info">
                                             <span class="player-name">${player.name}</span>
-                                            <div class="player-rally">${player.rallySize} rally capacity</div>
+                                            <div class="player-rally">${player.rallySize === 'offline' ? 'Offline player' : `${player.rallySize} march limit`}</div>
                                         </div>
                                         ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
                                     </li>
