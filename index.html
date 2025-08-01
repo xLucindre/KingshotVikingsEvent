@@ -262,6 +262,66 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
 
+        .search-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .search-section h3 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .search-form {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            padding: 15px 50px 15px 20px;
+            border: 2px solid rgba(33, 150, 243, 0.3);
+            border-radius: 15px;
+            background: rgba(33, 150, 243, 0.1);
+            color: white;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(33, 150, 243, 0.6);
+            background: rgba(33, 150, 243, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(244, 67, 54, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .clear-search-btn:hover {
+            background: rgba(244, 67, 54, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
         .input-form {
             display: flex;
             gap: 15px;
@@ -311,7 +371,7 @@
             cursor: not-allowed;
         }
 
-        .rally-select {
+        .march-select {
             padding: 15px 20px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 15px;
@@ -323,19 +383,19 @@
             cursor: pointer;
         }
 
-        .rally-select:focus {
+        .march-select:focus {
             outline: none;
             border-color: rgba(255, 255, 255, 0.6);
             background: rgba(255, 255, 255, 0.25);
             transform: translateY(-2px);
         }
 
-        .rally-select:disabled {
+        .march-select:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .rally-select option {
+        .march-select option {
             background: #333;
             color: white;
         }
@@ -409,7 +469,7 @@
             background: linear-gradient(90deg, #6c757d, #495057);
         }
 
-        .rally-badge.offline-badge {
+        .march-badge.offline-badge {
             background: linear-gradient(45deg, #6c757d, #495057);
             color: white;
         }
@@ -445,7 +505,7 @@
             font-size: 0.9rem;
         }
 
-        .rally-badge {
+        .march-badge {
             background: linear-gradient(45deg, #FF9800, #F57C00);
             color: white;
             padding: 5px 15px;
@@ -484,6 +544,21 @@
             animation: highlight 2s ease-out;
         }
 
+        .player-item.search-match {
+            background: rgba(33, 150, 243, 0.3);
+            border-color: rgba(33, 150, 243, 0.6);
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .group.has-search-match {
+            border-color: rgba(33, 150, 243, 0.6);
+            background: rgba(33, 150, 243, 0.05);
+        }
+
+        .group.has-search-match::before {
+            background: linear-gradient(90deg, #2196F3, #1976D2);
+        }
+
         @keyframes highlight {
             0% { transform: scale(1.05); }
             100% { transform: scale(1); }
@@ -499,7 +574,7 @@
             display: block;
         }
 
-        .player-rally {
+        .player-march {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.8rem;
             margin-top: 2px;
@@ -627,6 +702,14 @@
             .header-logo {
                 height: 40px;
             }
+
+            .search-section h3 {
+                font-size: 1rem;
+            }
+
+            .search-form {
+                max-width: 100%;
+            }
             
             .input-form {
                 flex-direction: column;
@@ -730,7 +813,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-number" id="totalGroups">0</span>
-                    <div class="stat-label">Groups</div>
+                    <div class="stat-label">March Groups</div>
                 </div>
             </div>
             
@@ -755,6 +838,16 @@
         </div>
 
         <div class="input-section">
+            <div class="search-section">
+                <h3>🔍 Find Your Group</h3>
+                <div class="search-form">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search for your name..." maxlength="50">
+                    <button onclick="clearSearch()" class="clear-search-btn" id="clearSearchBtn" style="display: none;">✕</button>
+                </div>
+            </div>
+            
+            <hr style="border: 1px solid rgba(255,255,255,0.2); margin: 20px 0;">
+            
             <div class="input-form">
                 <div class="input-group">
                     <label class="input-label">Player Name</label>
@@ -762,7 +855,7 @@
                 </div>
                 <div class="input-group">
                     <label class="input-label">March limit</label>
-                    <select id="rallySelect" class="rally-select" disabled>
+                    <select id="marchSelect" class="march-select" disabled>
                         <option value="1">1 march</option>
                         <option value="2">2 marches</option>
                         <option value="3" selected>3 marches</option>
@@ -822,12 +915,39 @@
         let isAdmin = false;
         let currentPlayerName = '';
         let currentAdminUser = null;
+        let currentSearchTerm = '';
+
+        // Search functionality
+        function searchPlayer() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            currentSearchTerm = searchTerm;
+            
+            const clearBtn = document.getElementById('clearSearchBtn');
+            
+            if (searchTerm === '') {
+                clearBtn.style.display = 'none';
+            } else {
+                clearBtn.style.display = 'block';
+            }
+            
+            updateDisplay();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            currentSearchTerm = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            updateDisplay();
+        }
 
         function initializeFirebase() {
             try {
+                console.log('Initializing Firebase...');
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
                 auth = firebase.auth();
+                
+                console.log('Firebase initialized successfully');
                 
                 // Set up authentication state listener
                 auth.onAuthStateChanged((user) => {
@@ -912,8 +1032,9 @@
 
         function enableInterface() {
             document.getElementById('playerInput').disabled = false;
-            document.getElementById('rallySelect').disabled = false;
+            document.getElementById('marchSelect').disabled = false;
             document.getElementById('addBtn').disabled = false;
+            document.getElementById('searchInput').disabled = false;
             document.getElementById('playerInput').focus();
         }
 
@@ -1048,9 +1169,9 @@
 
         async function addPlayer() {
             const input = document.getElementById('playerInput');
-            const rallySelect = document.getElementById('rallySelect');
+            const marchSelect = document.getElementById('marchSelect');
             const playerName = input.value.trim();
-            const rallyValue = rallySelect.value;
+            const marchValue = marchSelect.value;
             
             if (playerName === '') {
                 showNotification('Please enter a player name!', 'error');
@@ -1064,25 +1185,25 @@
 
             try {
                 if (isConnected && playersRef) {
-                    // Add to Firebase with rally size and timestamp
+                    // Add to Firebase with march limit and timestamp
                     await playersRef.child(playerName).set({
-                        rallySize: rallyValue,
+                        marchLimit: marchValue,
                         timestamp: Date.now()
                     });
                     currentPlayerName = playerName; // Remember current player
                     
-                    const displayText = rallyValue === 'offline' ? 'offline player' : `${rallyValue} rallies`;
+                    const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
                     showNotification(`${playerName} joined as ${displayText}!`, 'success');
                 } else {
                     // Fallback to local mode
                     localPlayers[playerName] = {
-                        rallySize: rallyValue,
+                        marchLimit: marchValue,
                         timestamp: Date.now()
                     };
                     currentPlayerName = playerName;
                     reorganizeGroups();
                     
-                    const displayText = rallyValue === 'offline' ? 'offline player' : `${rallyValue} rallies`;
+                    const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
                     if (isAdmin) {
                         showNotification(`${playerName} added locally (offline mode)`, 'info');
                     } else {
@@ -1140,57 +1261,57 @@
         function reorganizeGroups() {
             groups = [];
             
-            // First, organize players by rally size
-            const playersByRallySize = {};
+            // First, organize players by march size
+            const playersByMarchLimit = {};
             Object.entries(localPlayers).forEach(([playerName, playerData]) => {
-                const rallySize = playerData.rallySize || 3;
+                const marchLimit = playerData.marchLimit || 3;
                 
-                if (!playersByRallySize[rallySize]) {
-                    playersByRallySize[rallySize] = [];
+                if (!playersByMarchLimit[marchLimit]) {
+                    playersByMarchLimit[marchLimit] = [];
                 }
                 
-                playersByRallySize[rallySize].push({
+                playersByMarchLimit[marchLimit].push({
                     name: playerName,
-                    rallySize: rallySize,
+                    marchLimit: marchLimit,
                     timestamp: playerData.timestamp || 0
                 });
             });
             
-            // Sort players within each rally size by timestamp (first come, first served)
-            Object.keys(playersByRallySize).forEach(rallySize => {
-                playersByRallySize[rallySize].sort((a, b) => a.timestamp - b.timestamp);
+            // Sort players within each march limit by timestamp (first come, first served - NO SHUFFLING)
+            Object.keys(playersByMarchLimit).forEach(marchLimit => {
+                playersByMarchLimit[marchLimit].sort((a, b) => a.timestamp - b.timestamp);
             });
             
-            // Create groups with size matching rally capacity
-            // Process rally sizes from highest to lowest for better organization
-            const rallySizes = Object.keys(playersByRallySize).sort((a, b) => {
+            // Create groups with size matching march limitt
+            // Process march limits from highest to lowest for consistent ordering
+            const marchLimits = Object.keys(playersByMarchLimit).sort((a, b) => {
                 // Put offline at the end
                 if (a === 'offline') return 1;
                 if (b === 'offline') return -1;
                 return parseInt(b) - parseInt(a);
             });
             
-            rallySizes.forEach(rallySize => {
-                const players = playersByRallySize[rallySize];
+            marchLimits.forEach(marchLimit => {
+                const players = playersByMarchLimit[marchLimit];
                 let groupSize;
                 
-                // Determine group size based on rally type
-                if (rallySize === 'offline') {
+                // Determine group size based on march type
+                if (marchLimit === 'offline') {
                     groupSize = 4; // Offline players in 4-player groups
                 } else {
-                    groupSize = parseInt(rallySize); // Group size matches rally size
+                    groupSize = parseInt(marchLimit); // Group size matches march limit
                 }
                 
-                // Split players into groups matching their capacity
+                // Split players into groups in order (NO SHUFFLING)
                 for (let i = 0; i < players.length; i += groupSize) {
                     const group = players.slice(i, i + groupSize);
                     groups.push({
                         players: group,
-                        rallySize: rallySize,
+                        marchLimit: marchLimit,
                         groupNumber: groups.length + 1,
                         maxSize: groupSize,
                         isFull: group.length === groupSize,
-                        isOffline: rallySize === 'offline'
+                        isOffline: marchLimit === 'offline'
                     });
                 }
             });
@@ -1244,8 +1365,8 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
-                        <p>Add players to automatically create rally groups!</p>
-                        <p>Rally sizes 1-6 create matching group sizes. Offline players form 4-player groups.</p>
+                        <p>Add players to automatically create groups!</p>
+                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
                     </div>
                 `;
             } else {
@@ -1253,7 +1374,7 @@
                     <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''}">
                         <div class="group-header">
                             <div class="group-title">Group ${group.groupNumber}</div>
-                            <div class="rally-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.rallySize} Rally${group.rallySize > 1 ? 's' : ''}`}</div>
+                            <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}</div>
                             <div class="group-count">
                                 ${group.players.length}/${group.maxSize} players
                                 ${group.isFull ? '✅' : '⏳'}
@@ -1265,7 +1386,7 @@
                                     <li class="player-item">
                                         <div class="player-info">
                                             <span class="player-name">${player.name}</span>
-                                            <div class="player-rally">${player.rallySize === 'offline' ? 'Offline player' : `${player.rallySize} march limit`}</div>
+                                            <div class="player-march">${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}</div>
                                         </div>
                                         ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
                                     </li>
@@ -1327,6 +1448,22 @@
 
         // Initialize Firebase when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            // Set up search event listeners
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', searchPlayer);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchPlayer();
+                    }
+                });
+                console.log('Search listeners added');
+            } else {
+                console.error('Search input not found!');
+            }
+            
             initializeFirebase();
         });
 
