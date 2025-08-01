@@ -1383,48 +1383,61 @@
 
         function updateDisplay() {
             const container = document.getElementById('groupsContainer');
-            
+
             if (Object.keys(localPlayers).length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
                         <p>Add players to automatically create groups!</p>
-                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
+                        <p>March limit 1-6 creates matching group sizes. Offline players form 4-player groups.</p>
                     </div>
                 `;
             } else {
                 container.innerHTML = groups.map(group => {
-                    // Check if this group has any search matches
                     let hasSearchMatch = false;
                     if (currentSearchTerm) {
-                        hasSearchMatch = group.players.some(player => 
+                        hasSearchMatch = group.players.some(player =>
                             player.name.toLowerCase().includes(currentSearchTerm)
                         );
                     }
-                    
+
                     return `
-                        <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''} ${hasSearchMatch ? 'has-search-match' : ''}">
+                        <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''} ${hasSearchMatch ? 'has-search-match' : ''}"
+                            ondragover="allowDrop(event)"
+                            ondrop="handleDrop(event, ${group.groupNumber - 1})">
+                            
                             <div class="group-header">
                                 <div class="group-title">Group ${group.groupNumber}</div>
-                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}</div>
+                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">
+                                    ${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}
+                                </div>
                                 <div class="group-count">
                                     ${group.players.length}/${group.maxSize} players
                                     ${group.isFull ? '✅' : '⏳'}
                                 </div>
                             </div>
+
                             <ul class="player-list">
                                 ${group.players.map(player => {
-                                    // Check if this player matches the search
-                                    const isSearchMatch = currentSearchTerm && 
+                                    const isSearchMatch = currentSearchTerm &&
                                         player.name.toLowerCase().includes(currentSearchTerm);
-                                    
+
                                     return `
-                                        <li class="player-item ${isSearchMatch ? 'search-match' : ''}">
+                                        <li class="player-item ${isSearchMatch ? 'search-match' : ''}"
+                                            draggable="${isAdmin}"
+                                            ondragstart="handleDragStart(event, '${player.name}')"
+                                            ondragend="handleDragEnd(event)">
+                                            
                                             <div class="player-info">
                                                 <span class="player-name">${player.name}</span>
-                                                <div class="player-march">${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}</div>
+                                                <div class="player-march">
+                                                    ${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}
+                                                </div>
                                             </div>
-                                            ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
+
+                                            ${isAdmin ? `
+                                                <button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Remove player">✕</button>
+                                            ` : ''}
                                         </li>
                                     `;
                                 }).join('')}
@@ -1433,8 +1446,65 @@
                     `;
                 }).join('');
             }
-            
+
             updateStats();
+        }
+
+
+        let draggedPlayerName = null;
+
+        function handleDragStart(event, playerName) {
+            if (!isAdmin) return;
+            event.dataTransfer.setData("text/plain", playerName);
+            event.dataTransfer.effectAllowed = "move";
+        }
+
+        function handleDragEnd(event) {
+            draggedPlayerName = null;
+        }
+
+        function allowDrop(event) {
+            if (isAdmin) event.preventDefault();
+        }
+
+        async function handleDrop(event, targetGroupIndex) {
+            event.preventDefault();
+
+            const playerName = event.dataTransfer.getData("text/plain");
+
+            if (!isAdmin || !playerName || !(playerName in localPlayers)) {
+                console.warn('Drop ignored – invalid playerName:', playerName);
+                return;
+            }
+
+            const targetGroup = groups[targetGroupIndex];
+            if (!targetGroup) return;
+
+            if (targetGroup.players.length >= targetGroup.maxSize) {
+                showNotification("Target group is full!", "error");
+                return;
+            }
+
+            const player = localPlayers[playerName];
+            if (!player) return;
+
+            try {
+                if (isConnected && playersRef) {
+                    await playersRef.child(playerName).update({
+                        marchLimit: targetGroup.marchLimit,
+                        timestamp: Date.now(),
+                    });
+                } else {
+                    localPlayers[playerName].marchLimit = targetGroup.marchLimit;
+                    localPlayers[playerName].timestamp = Date.now();
+                }
+
+                showNotification(`Player "${playerName}" moved`, "info");
+                reorganizeGroups();
+            } catch (error) {
+                console.error("Error moving player:", error);
+                showNotification("Failed to move player!", "error");
+            }
         }
 
         function updateStats() {
