@@ -400,6 +400,15 @@
             border-radius: 20px 20px 0 0;
         }
 
+        .group.waiting {
+            border: 2px dashed rgba(255, 152, 0, 0.5);
+            background: rgba(255, 152, 0, 0.05);
+        }
+
+        .group.waiting::before {
+            background: linear-gradient(90deg, #FF9800, #FFC107);
+        }
+
         .group:hover {
             transform: translateY(-5px);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
@@ -867,6 +876,7 @@
                         <h3>⚠️ Offline Mode</h3>
                         <p>Firebase is not configured. Running in local mode.</p>
                         <p>Players added here won't be shared with others.</p>
+                        <p>Groups match rally capacity: 5 rallies = 5-player groups, etc.</p>
                     </div>
                 `;
                 updateConnectionStatus(false, 'Running in offline mode');
@@ -875,7 +885,7 @@
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
                         <p>Add players to automatically create rally groups!</p>
-                        <p>Players will be grouped with others of the same rally size (max 5 per group).</p>
+                        <p>Group sizes match rally capacity: 5 rallies = 5-player groups, 4 rallies = 4-player groups, etc.</p>
                     </div>
                 `;
                 updateConnectionStatus(false, 'Loading...');
@@ -1109,7 +1119,6 @@
         }
 
         function reorganizeGroups() {
-            const groupSize = 5;
             groups = [];
             
             // First, organize players by rally size
@@ -1133,20 +1142,23 @@
                 playersByRallySize[rallySize].sort((a, b) => a.timestamp - b.timestamp);
             });
             
-            // Create 5-player groups, but only with same rally size
+            // Create groups with size matching rally capacity
             // Process rally sizes from highest to lowest for better organization
             const rallySizes = Object.keys(playersByRallySize).sort((a, b) => parseInt(b) - parseInt(a));
             
             rallySizes.forEach(rallySize => {
                 const players = playersByRallySize[rallySize];
+                const groupSize = parseInt(rallySize); // Group size matches rally size!
                 
-                // Split players into groups of 5 (or less for the last group)
+                // Split players into groups matching their rally capacity
                 for (let i = 0; i < players.length; i += groupSize) {
                     const group = players.slice(i, i + groupSize);
                     groups.push({
                         players: group,
                         rallySize: parseInt(rallySize),
-                        groupNumber: groups.length + 1
+                        groupNumber: groups.length + 1,
+                        maxSize: groupSize,
+                        isFull: group.length === groupSize
                     });
                 }
             });
@@ -1201,30 +1213,29 @@
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
                         <p>Add players to automatically create rally groups!</p>
-                        <p>Players will be grouped with others of the same rally size (max 5 per group).</p>
+                        <p>Group sizes match rally capacity: 5 rallies = 5-player groups, 4 rallies = 4-player groups, etc.</p>
                     </div>
                 `;
             } else {
                 container.innerHTML = groups.map(group => `
-                    <div class="group">
+                    <div class="group ${group.isFull ? '' : 'waiting'}">
                         <div class="group-header">
                             <div class="group-title">Group ${group.groupNumber}</div>
                             <div class="rally-badge">${group.rallySize} Rally${group.rallySize > 1 ? 's' : ''}</div>
-                            <div class="group-count">${group.players.length} player${group.players.length !== 1 ? 's' : ''}</div>
+                            <div class="group-count">
+                                ${group.players.length}/${group.maxSize} players
+                                ${group.isFull ? '✅' : '⏳'}
+                            </div>
                         </div>
                         <ul class="player-list">
                             ${group.players.map(player => {
-                                const canRemove = canRemovePlayer(player.name);
-                                const isOwnPlayer = player.name === currentPlayerName;
-                                const buttonClass = isAdmin ? 'admin' : (isOwnPlayer ? 'own-player' : '');
-                                
                                 return `
                                     <li class="player-item">
                                         <div class="player-info">
                                             <span class="player-name">${player.name}</span>
                                             <div class="player-rally">${player.rallySize} rally capacity</div>
                                         </div>
-                                        ${canRemove ? `<button onclick="removePlayer('${player.name}')" class="remove-btn ${buttonClass}" title="${isAdmin ? 'Admin: Remove player' : 'Remove yourself'}">✕</button>` : ''}
+                                        ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
                                     </li>
                                 `;
                             }).join('')}
