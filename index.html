@@ -793,7 +793,7 @@
         let playersRef;
         let connectionRef;
         let localPlayers = {};
-        let groups = {};
+        let groups = [];
         let isAdmin = false;
         let currentPlayerName = '';
         let currentAdminUser = null;
@@ -838,11 +838,17 @@
 
                 // Enable inputs when connected
                 enableInterface();
-                showNotification('Connected to Firebase!', 'success');
+                // Only show Firebase connection message to admins
+                if (isAdmin) {
+                    showNotification('Connected to Firebase!', 'success');
+                }
 
             } catch (error) {
                 console.error('Firebase initialization error:', error);
-                showNotification('Firebase connection failed. Check console for details.', 'error');
+                // Only show technical errors to admins
+                if (isAdmin) {
+                    showNotification('Firebase connection failed. Check console for details.', 'error');
+                }
                 updateConnectionStatus(false, error.message);
                 
                 // Show fallback mode
@@ -854,15 +860,28 @@
 
         function showFallbackMode() {
             const container = document.getElementById('groupsContainer');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>⚠️ Offline Mode</h3>
-                    <p>Firebase is not configured. Running in local mode.</p>
-                    <p>Players added here won't be shared with others.</p>
-                </div>
-            `;
+            
+            if (isAdmin) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>⚠️ Offline Mode</h3>
+                        <p>Firebase is not configured. Running in local mode.</p>
+                        <p>Players added here won't be shared with others.</p>
+                    </div>
+                `;
+                updateConnectionStatus(false, 'Running in offline mode');
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Players Registered</h3>
+                        <p>Add players to automatically create rally groups!</p>
+                        <p>Players will be grouped with others of the same rally size (max 5 per group).</p>
+                    </div>
+                `;
+                updateConnectionStatus(false, 'Loading...');
+            }
+            
             enableInterface();
-            updateConnectionStatus(false, 'Running in offline mode');
         }
 
         function enableInterface() {
@@ -1034,7 +1053,12 @@
                     };
                     currentPlayerName = playerName;
                     reorganizeGroups();
-                    showNotification(`${playerName} added locally (offline mode)`, 'info');
+                    
+                    if (isAdmin) {
+                        showNotification(`${playerName} added locally (offline mode)`, 'info');
+                    } else {
+                        showNotification(`${playerName} joined with ${rallySize} rallies!`, 'success');
+                    }
                 }
                 
                 input.value = '';
@@ -1066,7 +1090,12 @@
                     }
                     
                     reorganizeGroups();
-                    showNotification(`${playerName} removed locally`, 'info');
+                    
+                    if (isAdmin) {
+                        showNotification(`${playerName} removed locally`, 'info');
+                    } else {
+                        showNotification(`${playerName} left the event`, 'info');
+                    }
                 }
             } catch (error) {
                 console.error('Error removing player:', error);
@@ -1075,7 +1104,8 @@
         }
 
         function canRemovePlayer(playerName) {
-            return isAdmin || playerName === currentPlayerName;
+            // Only admins can remove players
+            return isAdmin;
         }
 
         function reorganizeGroups() {
@@ -1150,7 +1180,12 @@
                     localPlayers = {};
                     currentPlayerName = '';
                     reorganizeGroups();
-                    showNotification('All players removed locally', 'info');
+                    
+                    if (isAdmin) {
+                        showNotification('All players removed locally', 'info');
+                    } else {
+                        showNotification('All players have been removed from the event', 'info');
+                    }
                 }
             } catch (error) {
                 console.error('Error clearing players:', error);
@@ -1203,7 +1238,7 @@
 
         function updateStats() {
             document.getElementById('totalPlayers').textContent = Object.keys(localPlayers).length;
-            document.getElementById('totalGroups').textContent = Object.keys(groups).length;
+            document.getElementById('totalGroups').textContent = groups.length;
         }
 
         function showNotification(message, type = 'success') {
