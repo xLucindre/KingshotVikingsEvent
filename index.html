@@ -553,6 +553,8 @@
         .group.has-search-match {
             border-color: rgba(33, 150, 243, 0.6);
             background: rgba(33, 150, 243, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(33, 150, 243, 0.2);
         }
 
         .group.has-search-match::before {
@@ -931,6 +933,19 @@
             }
             
             updateDisplay();
+            
+            // Scroll to first matching group after a short delay to ensure DOM is updated
+            if (searchTerm) {
+                setTimeout(() => {
+                    const matchingGroup = document.querySelector('.group.has-search-match');
+                    if (matchingGroup) {
+                        matchingGroup.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                }, 100);
+            }
         }
 
         function clearSearch() {
@@ -1261,37 +1276,45 @@
         function reorganizeGroups() {
             groups = [];
             
-            // First, organize players by march size
-            const playersByMarchLimit = {};
+            // Create an array of all players with their info and find earliest timestamp for each march limit
+            const allPlayers = [];
+            const earliestTimestampByMarch = {};
+            
             Object.entries(localPlayers).forEach(([playerName, playerData]) => {
                 const marchLimit = playerData.marchLimit || 3;
+                const timestamp = playerData.timestamp || 0;
                 
+                allPlayers.push({
+                    name: playerName,
+                    marchLimit: marchLimit,
+                    timestamp: timestamp
+                });
+                
+                // Track earliest timestamp for each march limit to determine group order
+                if (!earliestTimestampByMarch[marchLimit] || timestamp < earliestTimestampByMarch[marchLimit]) {
+                    earliestTimestampByMarch[marchLimit] = timestamp;
+                }
+            });
+            
+            // Sort players by timestamp (first come, first served - NO SHUFFLING)
+            allPlayers.sort((a, b) => a.timestamp - b.timestamp);
+            
+            // Group players by march limit but maintain timestamp order within groups
+            const playersByMarchLimit = {};
+            allPlayers.forEach(player => {
+                const marchLimit = player.marchLimit;
                 if (!playersByMarchLimit[marchLimit]) {
                     playersByMarchLimit[marchLimit] = [];
                 }
-                
-                playersByMarchLimit[marchLimit].push({
-                    name: playerName,
-                    marchLimit: marchLimit,
-                    timestamp: playerData.timestamp || 0
-                });
+                playersByMarchLimit[marchLimit].push(player);
             });
             
-            // Sort players within each march limit by timestamp (first come, first served - NO SHUFFLING)
-            Object.keys(playersByMarchLimit).forEach(marchLimit => {
-                playersByMarchLimit[marchLimit].sort((a, b) => a.timestamp - b.timestamp);
+            // Create groups ordered by earliest player timestamp in each march category
+            const marchLimitsByFirstPlayer = Object.keys(playersByMarchLimit).sort((a, b) => {
+                return earliestTimestampByMarch[a] - earliestTimestampByMarch[b];
             });
             
-            // Create groups with size matching march limitt
-            // Process march limits from highest to lowest for consistent ordering
-            const marchLimits = Object.keys(playersByMarchLimit).sort((a, b) => {
-                // Put offline at the end
-                if (a === 'offline') return 1;
-                if (b === 'offline') return -1;
-                return parseInt(b) - parseInt(a);
-            });
-            
-            marchLimits.forEach(marchLimit => {
+            marchLimitsByFirstPlayer.forEach(marchLimit => {
                 const players = playersByMarchLimit[marchLimit];
                 let groupSize;
                 
@@ -1370,31 +1393,45 @@
                     </div>
                 `;
             } else {
-                container.innerHTML = groups.map(group => `
-                    <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''}">
-                        <div class="group-header">
-                            <div class="group-title">Group ${group.groupNumber}</div>
-                            <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}</div>
-                            <div class="group-count">
-                                ${group.players.length}/${group.maxSize} players
-                                ${group.isFull ? '✅' : '⏳'}
+                container.innerHTML = groups.map(group => {
+                    // Check if this group has any search matches
+                    let hasSearchMatch = false;
+                    if (currentSearchTerm) {
+                        hasSearchMatch = group.players.some(player => 
+                            player.name.toLowerCase().includes(currentSearchTerm)
+                        );
+                    }
+                    
+                    return `
+                        <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''} ${hasSearchMatch ? 'has-search-match' : ''}">
+                            <div class="group-header">
+                                <div class="group-title">Group ${group.groupNumber}</div>
+                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}</div>
+                                <div class="group-count">
+                                    ${group.players.length}/${group.maxSize} players
+                                    ${group.isFull ? '✅' : '⏳'}
+                                </div>
                             </div>
+                            <ul class="player-list">
+                                ${group.players.map(player => {
+                                    // Check if this player matches the search
+                                    const isSearchMatch = currentSearchTerm && 
+                                        player.name.toLowerCase().includes(currentSearchTerm);
+                                    
+                                    return `
+                                        <li class="player-item ${isSearchMatch ? 'search-match' : ''}">
+                                            <div class="player-info">
+                                                <span class="player-name">${player.name}</span>
+                                                <div class="player-march">${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}</div>
+                                            </div>
+                                            ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
                         </div>
-                        <ul class="player-list">
-                            ${group.players.map(player => {
-                                return `
-                                    <li class="player-item">
-                                        <div class="player-info">
-                                            <span class="player-name">${player.name}</span>
-                                            <div class="player-march">${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}</div>
-                                        </div>
-                                        ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
-                                    </li>
-                                `;
-                            }).join('')}
-                        </ul>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
             
             updateStats();
