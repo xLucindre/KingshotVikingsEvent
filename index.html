@@ -800,10 +800,6 @@
 
         function initializeFirebase() {
             try {
-                if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE") {
-                    throw new Error("Firebase configuration not set. Please update firebaseConfig with your project details.");
-                }
-
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
                 auth = firebase.auth();
@@ -1083,26 +1079,46 @@
         }
 
         function reorganizeGroups() {
-            groups = {};
+            const groupSize = 5;
+            groups = [];
             
-            // Group players by rally size
+            // First, organize players by rally size
+            const playersByRallySize = {};
             Object.entries(localPlayers).forEach(([playerName, playerData]) => {
                 const rallySize = playerData.rallySize || 3;
                 
-                if (!groups[rallySize]) {
-                    groups[rallySize] = [];
+                if (!playersByRallySize[rallySize]) {
+                    playersByRallySize[rallySize] = [];
                 }
                 
-                groups[rallySize].push({
+                playersByRallySize[rallySize].push({
                     name: playerName,
                     rallySize: rallySize,
                     timestamp: playerData.timestamp || 0
                 });
             });
             
-            // Sort players within each group by timestamp (first come, first served)
-            Object.keys(groups).forEach(rallySize => {
-                groups[rallySize].sort((a, b) => a.timestamp - b.timestamp);
+            // Sort players within each rally size by timestamp (first come, first served)
+            Object.keys(playersByRallySize).forEach(rallySize => {
+                playersByRallySize[rallySize].sort((a, b) => a.timestamp - b.timestamp);
+            });
+            
+            // Create 5-player groups, but only with same rally size
+            // Process rally sizes from highest to lowest for better organization
+            const rallySizes = Object.keys(playersByRallySize).sort((a, b) => parseInt(b) - parseInt(a));
+            
+            rallySizes.forEach(rallySize => {
+                const players = playersByRallySize[rallySize];
+                
+                // Split players into groups of 5 (or less for the last group)
+                for (let i = 0; i < players.length; i += groupSize) {
+                    const group = players.slice(i, i + groupSize);
+                    groups.push({
+                        players: group,
+                        rallySize: parseInt(rallySize),
+                        groupNumber: groups.length + 1
+                    });
+                }
             });
             
             updateDisplay();
@@ -1150,41 +1166,36 @@
                     <div class="empty-state">
                         <h3>No Players Registered</h3>
                         <p>Add players to automatically create rally groups!</p>
-                        <p>Players will be grouped by their rally size (1-5 rallies).</p>
+                        <p>Players will be grouped with others of the same rally size (max 5 per group).</p>
                     </div>
                 `;
             } else {
-                const rallyGroups = Object.keys(groups).sort((a, b) => parseInt(b) - parseInt(a));
-                
-                container.innerHTML = rallyGroups.map(rallySize => {
-                    const players = groups[rallySize];
-                    return `
-                        <div class="group">
-                            <div class="group-header">
-                                <div class="group-title">Rally Group ${rallySize}</div>
-                                <div class="rally-badge">${rallySize} Rally${rallySize > 1 ? 's' : ''}</div>
-                                <div class="group-count">${players.length} player${players.length !== 1 ? 's' : ''}</div>
-                            </div>
-                            <ul class="player-list">
-                                ${players.map(player => {
-                                    const canRemove = canRemovePlayer(player.name);
-                                    const isOwnPlayer = player.name === currentPlayerName;
-                                    const buttonClass = isAdmin ? 'admin' : (isOwnPlayer ? 'own-player' : '');
-                                    
-                                    return `
-                                        <li class="player-item">
-                                            <div class="player-info">
-                                                <span class="player-name">${player.name}</span>
-                                                <div class="player-rally">${player.rallySize} rally capacity</div>
-                                            </div>
-                                            ${canRemove ? `<button onclick="removePlayer('${player.name}')" class="remove-btn ${buttonClass}" title="${isAdmin ? 'Admin: Remove player' : 'Remove yourself'}">✕</button>` : ''}
-                                        </li>
-                                    `;
-                                }).join('')}
-                            </ul>
+                container.innerHTML = groups.map(group => `
+                    <div class="group">
+                        <div class="group-header">
+                            <div class="group-title">Group ${group.groupNumber}</div>
+                            <div class="rally-badge">${group.rallySize} Rally${group.rallySize > 1 ? 's' : ''}</div>
+                            <div class="group-count">${group.players.length} player${group.players.length !== 1 ? 's' : ''}</div>
                         </div>
-                    `;
-                }).join('');
+                        <ul class="player-list">
+                            ${group.players.map(player => {
+                                const canRemove = canRemovePlayer(player.name);
+                                const isOwnPlayer = player.name === currentPlayerName;
+                                const buttonClass = isAdmin ? 'admin' : (isOwnPlayer ? 'own-player' : '');
+                                
+                                return `
+                                    <li class="player-item">
+                                        <div class="player-info">
+                                            <span class="player-name">${player.name}</span>
+                                            <div class="player-rally">${player.rallySize} rally capacity</div>
+                                        </div>
+                                        ${canRemove ? `<button onclick="removePlayer('${player.name}')" class="remove-btn ${buttonClass}" title="${isAdmin ? 'Admin: Remove player' : 'Remove yourself'}">✕</button>` : ''}
+                                    </li>
+                                `;
+                            }).join('')}
+                        </ul>
+                    </div>
+                `).join('');
             }
             
             updateStats();
