@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kingshot Vikings Event</title>
+    <title>Kingshot Vikings Event - Multi Alliance</title>
     <style>
         * {
             margin: 0;
@@ -15,7 +15,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
             position: relative;
             overflow-x: hidden;
         }
@@ -32,11 +31,161 @@
             z-index: 1;
         }
 
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-240px);
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            left: 240px;
+            top: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 0 10px 10px 0;
+            padding: 10px 15px;
+            cursor: pointer;
+            z-index: 101;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar.collapsed + .sidebar-toggle {
+            left: 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .alliance-list {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .alliance-item {
+            margin: 0 20px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alliance-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 15px 15px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .alliance-item.cob::before {
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+        }
+
+        .alliance-item.lux::before {
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+        }
+
+        .alliance-item.gew::before {
+            background: linear-gradient(90deg, #A8E6CF, #7FCDCD);
+        }
+
+        .alliance-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .alliance-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .alliance-item.active::before {
+            height: 100%;
+            opacity: 0.1;
+        }
+
+        .alliance-name {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .alliance-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .alliance-stat {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+
+        .alliance-stat-number {
+            color: white;
+            font-weight: bold;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 40px;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            position: relative;
-            z-index: 2;
         }
 
         .header {
@@ -73,6 +222,20 @@
 
         .header-logo:hover {
             transform: scale(1.1) rotate(5deg);
+        }
+
+        .current-alliance {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .current-alliance-name {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
         }
 
         .admin-status {
@@ -695,6 +858,37 @@
         }
 
         @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+            }
+
+            .sidebar:not(.collapsed) {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                left: 20px;
+                border-radius: 10px;
+            }
+
+            .sidebar.collapsed + .sidebar-toggle {
+                left: 20px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 20px 20px;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
             .header h1 {
                 font-size: 2rem;
                 flex-direction: column;
@@ -795,87 +989,137 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><img src="logo.png" class="header-logo"> Kingshot Vikings Event</h1>
-            <div class="admin-status" id="adminStatus">
-                Admin Mode Active
-                <span class="admin-user" id="adminUser"></span>
-            </div>
-            
-            <div id="connectionStatus" class="connection-status connecting">
-                <div class="status-dot"></div>
-                <span>Connecting to Firebase...</span>
-            </div>
-
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-number" id="totalPlayers">0</span>
-                    <div class="stat-label">Players</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="totalGroups">0</span>
-                    <div class="stat-label">March Groups</div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">🏰 Alliances</div>
+            <div class="sidebar-subtitle">Select your alliance</div>
+        </div>
+        <div class="alliance-list">
+            <div class="alliance-item cob active" onclick="switchAlliance('COB')">
+                <div class="alliance-name">COB</div>
+                <div class="alliance-stats">
+                    <div class="alliance-stat">
+                        <span class="alliance-stat-number" id="cobPlayerCount">0</span> players
+                    </div>
+                    <div class="alliance-stat">
+                        <span class="alliance-stat-number" id="cobGroupCount">0</span> groups
+                    </div>
                 </div>
             </div>
-            
-            <div class="online-count" id="onlineCount">
-                👥 Loading online players...
+            <div class="alliance-item lux" onclick="switchAlliance('LUX')">
+                <div class="alliance-name">LUX</div>
+                <div class="alliance-stats">
+                    <div class="alliance-stat">
+                        <span class="alliance-stat-number" id="luxPlayerCount">0</span> players
+                    </div>
+                    <div class="alliance-stat">
+                        <span class="alliance-stat-number" id="luxGroupCount">0</span> groups
+                    </div>
+                </div>
+            </div>
+            <div class="alliance-item gew" onclick="switchAlliance('GEW')">
+                <div class="alliance-name">GEW</div>
+                <div class="alliance-stats">
+                    <div class="alliance-stat">
+                        <span class="alliance-stat-number" id="gewPlayerCount">0</span> players
+                    </div>
+                    <div class="alliance-stat">
+                        <span class="alliance-stat-number" id="gewGroupCount">0</span> groups
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="admin-section" id="adminSection">
-            <h3>🛡️ Admin Access</h3>
-            <div class="admin-login">
-                <div class="admin-form-row">
-                    <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
-                    <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
-                </div>
-                <div class="admin-form-row">
-                    <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
-                    <button onclick="adminLogout()" id="adminLogoutBtn" style="display: none;">🚪 Logout</button>
-                </div>
-                <div class="auth-error" id="authError"></div>
-            </div>
-        </div>
+    <div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
 
-        <div class="input-section">
-            <div class="search-section">
-                <h3>🔍 Find Your Group</h3>
-                <div class="search-form">
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search for your name..." maxlength="50">
-                    <button onclick="clearSearch()" class="clear-search-btn" id="clearSearchBtn" style="display: none;">✕</button>
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1><img src="logo.png" class="header-logo"> Kingshot Vikings Event</h1>
+                <div class="current-alliance">
+                    <div class="current-alliance-name" id="currentAllianceName">COB Alliance</div>
                 </div>
-            </div>
-            
-            <hr style="border: 1px solid rgba(255,255,255,0.2); margin: 20px 0;">
-            
-            <div class="input-form">
-                <div class="input-group">
-                    <label class="input-label">Player Name</label>
-                    <input type="text" id="playerInput" class="player-input" placeholder="Enter your name..." maxlength="50" disabled>
+                <div class="admin-status" id="adminStatus">
+                    Admin Mode Active
+                    <span class="admin-user" id="adminUser"></span>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">March limit</label>
-                    <select id="marchSelect" class="march-select" disabled>
-                        <option value="1">1 march</option>
-                        <option value="2">2 marches</option>
-                        <option value="3" selected>3 marches</option>
-                        <option value="4">4 marches</option>
-                        <option value="5">5 marches</option>
-                        <option value="6">6 marches</option>
-                        <option value="offline">Offline Player</option>
-                    </select>
+                
+                <div id="connectionStatus" class="connection-status connecting">
+                    <div class="status-dot"></div>
+                    <span>Connecting to Firebase...</span>
                 </div>
-                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>⚔️ Join Event</button>
-            </div>
-        </div>
 
-        <div id="groupsContainer" class="groups-container">
-            <div class="loading-state">
-                <div class="loading-spinner"></div>
-                <h3>Loading Event Data...</h3>
-                <p>Connecting to Firebase Realtime Database</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalPlayers">0</span>
+                        <div class="stat-label">Players</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalGroups">0</span>
+                        <div class="stat-label">March Groups</div>
+                    </div>
+                </div>
+                
+                <div class="online-count" id="onlineCount">
+                    👥 Loading online players...
+                </div>
+            </div>
+
+            <div class="admin-section" id="adminSection">
+                <h3>🛡️ Admin Access</h3>
+                <div class="admin-login">
+                    <div class="admin-form-row">
+                        <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
+                        <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
+                    </div>
+                    <div class="admin-form-row">
+                        <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
+                        <button onclick="adminLogout()" id="adminLogoutBtn" style="display: none;">🚪 Logout</button>
+                    </div>
+                    <div class="auth-error" id="authError"></div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="search-section">
+                    <h3>🔍 Find Your Group</h3>
+                    <div class="search-form">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search for your name..." maxlength="50">
+                        <button onclick="clearSearch()" class="clear-search-btn" id="clearSearchBtn" style="display: none;">✕</button>
+                    </div>
+                </div>
+                
+                <hr style="border: 1px solid rgba(255,255,255,0.2); margin: 20px 0;">
+                
+                <div class="input-form">
+                    <div class="input-group">
+                        <label class="input-label">Player Name</label>
+                        <input type="text" id="playerInput" class="player-input" placeholder="Enter your name..." maxlength="50" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">March limit</label>
+                        <select id="marchSelect" class="march-select" disabled>
+                            <option value="1">1 march</option>
+                            <option value="2">2 marches</option>
+                            <option value="3" selected>3 marches</option>
+                            <option value="4">4 marches</option>
+                            <option value="5">5 marches</option>
+                            <option value="6">6 marches</option>
+                            <option value="offline">Offline Player</option>
+                        </select>
+                    </div>
+                    <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>⚔️ Join Event</button>
+                </div>
+            </div>
+
+            <div id="groupsContainer" class="groups-container">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <h3>Loading Event Data...</h3>
+                    <p>Connecting to Firebase Realtime Database</p>
+                </div>
             </div>
         </div>
     </div>
@@ -918,6 +1162,160 @@
         let currentPlayerName = '';
         let currentAdminUser = null;
         let currentSearchTerm = '';
+        let currentAlliance = 'COB';
+        let allianceListeners = {}; // To store Firebase listeners for each alliance
+        let allAlliancesData = {}; // Store data for all alliances
+
+        // Available alliances
+        const ALLIANCES = ['COB', 'LUX', 'GEW'];
+
+        // Sidebar functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        function switchAlliance(allianceName) {
+            if (currentAlliance === allianceName) return;
+            
+            // Update UI
+            document.querySelectorAll('.alliance-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.querySelector(`.alliance-item.${allianceName.toLowerCase()}`).classList.add('active');
+            document.getElementById('currentAllianceName').textContent = `${allianceName} Alliance`;
+            
+            // Clear current search
+            clearSearch();
+            
+            // Switch alliance
+            currentAlliance = allianceName;
+            localPlayers = allAlliancesData[allianceName] || {};
+            
+            // Update Firebase reference
+            if (isConnected && database) {
+                setupAllianceListener(allianceName);
+            }
+            
+            reorganizeGroups();
+            showNotification(`Switched to ${allianceName} Alliance`, 'info');
+        }
+
+        function setupAllianceListener(allianceName) {
+            // Remove existing listener for current alliance if it exists
+            if (playersRef && allianceListeners[currentAlliance]) {
+                playersRef.off();
+            }
+            
+            // Set up new reference and listener
+            playersRef = database.ref(`event/alliances/${allianceName}/players`);
+            
+            const listener = playersRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                allAlliancesData[allianceName] = data || {};
+                
+                if (currentAlliance === allianceName) {
+                    localPlayers = allAlliancesData[allianceName];
+                    reorganizeGroups();
+                    updateOnlineCount();
+                }
+                
+                updateAllianceStats();
+            });
+            
+            allianceListeners[allianceName] = listener;
+        }
+
+        function updateAllianceStats() {
+            ALLIANCES.forEach(alliance => {
+                const allianceData = allAlliancesData[alliance] || {};
+                const playerCount = Object.keys(allianceData).length;
+                
+                // Calculate groups for this alliance
+                const allianceGroups = calculateGroupsForAlliance(allianceData);
+                const groupCount = allianceGroups.length;
+                
+                // Update sidebar stats
+                const playerCountEl = document.getElementById(`${alliance.toLowerCase()}PlayerCount`);
+                const groupCountEl = document.getElementById(`${alliance.toLowerCase()}GroupCount`);
+                
+                if (playerCountEl) playerCountEl.textContent = playerCount;
+                if (groupCountEl) groupCountEl.textContent = groupCount;
+            });
+        }
+
+        function calculateGroupsForAlliance(allianceData) {
+            const allianceGroups = [];
+            
+            // Create an array of all players with their info and find earliest timestamp for each march limit
+            const allPlayers = [];
+            const earliestTimestampByMarch = {};
+            
+            Object.entries(allianceData).forEach(([playerName, playerData]) => {
+                const marchLimit = playerData.marchLimit || 3;
+                const timestamp = playerData.timestamp || 0;
+                
+                allPlayers.push({
+                    name: playerName,
+                    marchLimit: marchLimit,
+                    timestamp: timestamp
+                });
+                
+                // Track earliest timestamp for each march limit to determine group order
+                if (!earliestTimestampByMarch[marchLimit] || timestamp < earliestTimestampByMarch[marchLimit]) {
+                    earliestTimestampByMarch[marchLimit] = timestamp;
+                }
+            });
+            
+            // Sort players by timestamp (first come, first served)
+            allPlayers.sort((a, b) => a.timestamp - b.timestamp);
+            
+            // Group players by march limit but maintain timestamp order within groups
+            const playersByMarchLimit = {};
+            allPlayers.forEach(player => {
+                const marchLimit = player.marchLimit;
+                if (!playersByMarchLimit[marchLimit]) {
+                    playersByMarchLimit[marchLimit] = [];
+                }
+                playersByMarchLimit[marchLimit].push(player);
+            });
+            
+            // Create groups ordered by earliest player timestamp in each march category
+            const marchLimitsByFirstPlayer = Object.keys(playersByMarchLimit).sort((a, b) => {
+                return earliestTimestampByMarch[a] - earliestTimestampByMarch[b];
+            });
+            
+            marchLimitsByFirstPlayer.forEach(marchLimit => {
+                const players = playersByMarchLimit[marchLimit];
+                let groupSize;
+                
+                // Determine group size based on march type
+                if (marchLimit === 'offline') {
+                    groupSize = 4; // Offline players in 4-player groups
+                } else {
+                    groupSize = parseInt(marchLimit); // Group size matches march limit
+                }
+                
+                // Split players into groups in order
+                for (let i = 0; i < players.length; i += groupSize) {
+                    const group = players.slice(i, i + groupSize);
+                    allianceGroups.push({
+                        players: group,
+                        marchLimit: marchLimit,
+                        groupNumber: allianceGroups.length + 1,
+                        maxSize: groupSize,
+                        isFull: group.length === groupSize,
+                        isOffline: marchLimit === 'offline'
+                    });
+                }
+            });
+            
+            return allianceGroups;
+        }
 
         // Search functionality
         function searchPlayer() {
@@ -983,21 +1381,18 @@
                 connectionRef.on('value', (snapshot) => {
                     isConnected = snapshot.val() === true;
                     updateConnectionStatus();
-                });
-
-                // Set up players reference
-                playersRef = database.ref('event/players');
-                
-                // Listen for player changes
-                playersRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    localPlayers = data || {};
-                    reorganizeGroups();
-                    updateOnlineCount();
+                    
+                    if (isConnected) {
+                        // Set up listeners for all alliances
+                        ALLIANCES.forEach(alliance => {
+                            setupAllianceListener(alliance);
+                        });
+                    }
                 });
 
                 // Enable inputs when connected
                 enableInterface();
+                
                 // Only show Firebase connection message to admins
                 if (isAdmin) {
                     showNotification('Connected to Firebase!', 'success');
@@ -1072,7 +1467,7 @@
         function updateOnlineCount() {
             const count = Object.keys(localPlayers).length;
             const countEl = document.getElementById('onlineCount');
-            countEl.textContent = `👥 ${count} player${count !== 1 ? 's' : ''} registered`;
+            countEl.textContent = `👥 ${count} player${count !== 1 ? 's' : ''} registered in ${currentAlliance}`;
         }
 
         function toggleAdminSection() {
@@ -1208,21 +1603,23 @@
                     currentPlayerName = playerName; // Remember current player
                     
                     const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
-                    showNotification(`${playerName} joined as ${displayText}!`, 'success');
+                    showNotification(`${playerName} joined ${currentAlliance} as ${displayText}!`, 'success');
                 } else {
                     // Fallback to local mode
                     localPlayers[playerName] = {
                         marchLimit: marchValue,
                         timestamp: Date.now()
                     };
+                    allAlliancesData[currentAlliance] = localPlayers;
                     currentPlayerName = playerName;
                     reorganizeGroups();
+                    updateAllianceStats();
                     
                     const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
                     if (isAdmin) {
-                        showNotification(`${playerName} added locally (offline mode)`, 'info');
+                        showNotification(`${playerName} added locally to ${currentAlliance}`, 'info');
                     } else {
-                        showNotification(`${playerName} joined as ${displayText}!`, 'success');
+                        showNotification(`${playerName} joined ${currentAlliance} as ${displayText}!`, 'success');
                     }
                 }
                 
@@ -1245,21 +1642,23 @@
                         currentPlayerName = '';
                     }
                     
-                    showNotification(`${playerName} left the event`, 'info');
+                    showNotification(`${playerName} left ${currentAlliance}`, 'info');
                 } else {
                     // Fallback to local mode
                     delete localPlayers[playerName];
+                    allAlliancesData[currentAlliance] = localPlayers;
                     
                     if (playerName === currentPlayerName) {
                         currentPlayerName = '';
                     }
                     
                     reorganizeGroups();
+                    updateAllianceStats();
                     
                     if (isAdmin) {
-                        showNotification(`${playerName} removed locally`, 'info');
+                        showNotification(`${playerName} removed from ${currentAlliance}`, 'info');
                     } else {
-                        showNotification(`${playerName} left the event`, 'info');
+                        showNotification(`${playerName} left ${currentAlliance}`, 'info');
                     }
                 }
             } catch (error) {
@@ -1274,77 +1673,13 @@
         }
 
         function reorganizeGroups() {
-            groups = [];
-            
-            // Create an array of all players with their info and find earliest timestamp for each march limit
-            const allPlayers = [];
-            const earliestTimestampByMarch = {};
-            
-            Object.entries(localPlayers).forEach(([playerName, playerData]) => {
-                const marchLimit = playerData.marchLimit || 3;
-                const timestamp = playerData.timestamp || 0;
-                
-                allPlayers.push({
-                    name: playerName,
-                    marchLimit: marchLimit,
-                    timestamp: timestamp
-                });
-                
-                // Track earliest timestamp for each march limit to determine group order
-                if (!earliestTimestampByMarch[marchLimit] || timestamp < earliestTimestampByMarch[marchLimit]) {
-                    earliestTimestampByMarch[marchLimit] = timestamp;
-                }
-            });
-            
-            // Sort players by timestamp (first come, first served - NO SHUFFLING)
-            allPlayers.sort((a, b) => a.timestamp - b.timestamp);
-            
-            // Group players by march limit but maintain timestamp order within groups
-            const playersByMarchLimit = {};
-            allPlayers.forEach(player => {
-                const marchLimit = player.marchLimit;
-                if (!playersByMarchLimit[marchLimit]) {
-                    playersByMarchLimit[marchLimit] = [];
-                }
-                playersByMarchLimit[marchLimit].push(player);
-            });
-            
-            // Create groups ordered by earliest player timestamp in each march category
-            const marchLimitsByFirstPlayer = Object.keys(playersByMarchLimit).sort((a, b) => {
-                return earliestTimestampByMarch[a] - earliestTimestampByMarch[b];
-            });
-            
-            marchLimitsByFirstPlayer.forEach(marchLimit => {
-                const players = playersByMarchLimit[marchLimit];
-                let groupSize;
-                
-                // Determine group size based on march type
-                if (marchLimit === 'offline') {
-                    groupSize = 4; // Offline players in 4-player groups
-                } else {
-                    groupSize = parseInt(marchLimit); // Group size matches march limit
-                }
-                
-                // Split players into groups in order (NO SHUFFLING)
-                for (let i = 0; i < players.length; i += groupSize) {
-                    const group = players.slice(i, i + groupSize);
-                    groups.push({
-                        players: group,
-                        marchLimit: marchLimit,
-                        groupNumber: groups.length + 1,
-                        maxSize: groupSize,
-                        isFull: group.length === groupSize,
-                        isOffline: marchLimit === 'offline'
-                    });
-                }
-            });
-            
+            groups = calculateGroupsForAlliance(localPlayers);
             updateDisplay();
         }
 
         async function clearAllPlayers() {
             if (Object.keys(localPlayers).length === 0) {
-                showNotification('No players to clear!', 'error');
+                showNotification(`No players to clear in ${currentAlliance}!`, 'error');
                 return;
             }
 
@@ -1353,7 +1688,7 @@
                 return;
             }
 
-            if (!confirm('Are you sure you want to remove ALL players from the event?')) {
+            if (!confirm(`Are you sure you want to remove ALL players from ${currentAlliance} alliance?`)) {
                 return;
             }
 
@@ -1362,17 +1697,19 @@
                     // Clear Firebase
                     await playersRef.remove();
                     currentPlayerName = '';
-                    showNotification('All players have been removed from the event', 'info');
+                    showNotification(`All players removed from ${currentAlliance}`, 'info');
                 } else {
                     // Clear local
                     localPlayers = {};
+                    allAlliancesData[currentAlliance] = {};
                     currentPlayerName = '';
                     reorganizeGroups();
+                    updateAllianceStats();
                     
                     if (isAdmin) {
-                        showNotification('All players removed locally', 'info');
+                        showNotification(`All players removed from ${currentAlliance} locally`, 'info');
                     } else {
-                        showNotification('All players have been removed from the event', 'info');
+                        showNotification(`All players removed from ${currentAlliance}`, 'info');
                     }
                 }
             } catch (error) {
@@ -1383,45 +1720,45 @@
 
         function updateDisplay() {
             const container = document.getElementById('groupsContainer');
-
+            
             if (Object.keys(localPlayers).length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <h3>No Players Registered</h3>
+                        <h3>No Players Registered in ${currentAlliance}</h3>
                         <p>Add players to automatically create groups!</p>
-                        <p>March limit 1-6 creates matching group sizes. Offline players form 4-player groups.</p>
+                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
                     </div>
                 `;
             } else {
                 container.innerHTML = groups.map(group => {
+                    // Check if this group has any search matches
                     let hasSearchMatch = false;
                     if (currentSearchTerm) {
-                        hasSearchMatch = group.players.some(player =>
+                        hasSearchMatch = group.players.some(player => 
                             player.name.toLowerCase().includes(currentSearchTerm)
                         );
                     }
-
+                    
                     return `
                         <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''} ${hasSearchMatch ? 'has-search-match' : ''}"
                             ondragover="allowDrop(event)"
                             ondrop="handleDrop(event, ${group.groupNumber - 1})">
                             
                             <div class="group-header">
-                                <div class="group-title">Group ${group.groupNumber}</div>
-                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">
-                                    ${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}
-                                </div>
+                                <div class="group-title">${currentAlliance} Group ${group.groupNumber}</div>
+                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}</div>
                                 <div class="group-count">
                                     ${group.players.length}/${group.maxSize} players
                                     ${group.isFull ? '✅' : '⏳'}
                                 </div>
                             </div>
-
+                            
                             <ul class="player-list">
                                 ${group.players.map(player => {
-                                    const isSearchMatch = currentSearchTerm &&
+                                    // Check if this player matches the search
+                                    const isSearchMatch = currentSearchTerm && 
                                         player.name.toLowerCase().includes(currentSearchTerm);
-
+                                    
                                     return `
                                         <li class="player-item ${isSearchMatch ? 'search-match' : ''}"
                                             draggable="${isAdmin}"
@@ -1430,14 +1767,10 @@
                                             
                                             <div class="player-info">
                                                 <span class="player-name">${player.name}</span>
-                                                <div class="player-march">
-                                                    ${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}
-                                                </div>
+                                                <div class="player-march">${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}</div>
                                             </div>
-
-                                            ${isAdmin ? `
-                                                <button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Remove player">✕</button>
-                                            ` : ''}
+                                            
+                                            ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
                                         </li>
                                     `;
                                 }).join('')}
@@ -1446,15 +1779,21 @@
                     `;
                 }).join('');
             }
-
+            
             updateStats();
         }
 
+        function updateStats() {
+            document.getElementById('totalPlayers').textContent = Object.keys(localPlayers).length;
+            document.getElementById('totalGroups').textContent = groups.length;
+        }
 
+        // Drag & Drop functionality for admins
         let draggedPlayerName = null;
 
         function handleDragStart(event, playerName) {
             if (!isAdmin) return;
+            draggedPlayerName = playerName;
             event.dataTransfer.setData("text/plain", playerName);
             event.dataTransfer.effectAllowed = "move";
         }
@@ -1490,26 +1829,25 @@
 
             try {
                 if (isConnected && playersRef) {
+                    // Update in Firebase for current alliance
                     await playersRef.child(playerName).update({
                         marchLimit: targetGroup.marchLimit,
                         timestamp: Date.now(),
                     });
                 } else {
+                    // Update locally
                     localPlayers[playerName].marchLimit = targetGroup.marchLimit;
                     localPlayers[playerName].timestamp = Date.now();
+                    allAlliancesData[currentAlliance] = localPlayers;
+                    reorganizeGroups();
+                    updateAllianceStats();
                 }
 
-                showNotification(`Player "${playerName}" moved`, "info");
-                reorganizeGroups();
+                showNotification(`${playerName} moved to ${currentAlliance} ${targetGroup.marchLimit === 'offline' ? 'offline' : targetGroup.marchLimit + ' march'} group`, "info");
             } catch (error) {
                 console.error("Error moving player:", error);
                 showNotification("Failed to move player!", "error");
             }
-        }
-
-        function updateStats() {
-            document.getElementById('totalPlayers').textContent = Object.keys(localPlayers).length;
-            document.getElementById('totalGroups').textContent = groups.length;
         }
 
         function showNotification(message, type = 'success') {
@@ -1570,6 +1908,11 @@
             } else {
                 console.error('Search input not found!');
             }
+            
+            // Initialize alliance data
+            ALLIANCES.forEach(alliance => {
+                allAlliancesData[alliance] = {};
+            });
             
             initializeFirebase();
         });
