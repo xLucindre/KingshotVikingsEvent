@@ -1196,9 +1196,10 @@
             currentAlliance = allianceName;
             localPlayers = allAlliancesData[allianceName] || {};
             
-            // Update Firebase reference
+            // WICHTIG: playersRef auf neue Allianz setzen
             if (isConnected && database) {
-                setupAllianceListener(allianceName);
+                playersRef = database.ref(`event/alliances/${allianceName}/players`);
+                console.log(`Switched playersRef to ${allianceName}`);
             }
             
             reorganizeGroups();
@@ -1207,14 +1208,22 @@
 
         function setupAllianceListener(allianceName) {
             // Remove existing listener for current alliance if it exists
-            if (playersRef && allianceListeners[currentAlliance]) {
-                playersRef.off();
+            if (allianceListeners[allianceName]) {
+                // Clean up existing listener
+                const oldRef = database.ref(`event/alliances/${allianceName}/players`);
+                oldRef.off();
             }
             
             // Set up new reference and listener
-            playersRef = database.ref(`event/alliances/${allianceName}/players`);
+            const allianceRef = database.ref(`event/alliances/${allianceName}/players`);
             
-            const listener = playersRef.on('value', (snapshot) => {
+            // WICHTIG: Wenn dies die aktuelle Allianz ist, setze auch playersRef
+            if (allianceName === currentAlliance) {
+                playersRef = allianceRef;
+                console.log(`Active playersRef set to ${allianceName}`);
+            }
+            
+            const listener = allianceRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 allAlliancesData[allianceName] = data || {};
                 
@@ -1387,6 +1396,11 @@
                         ALLIANCES.forEach(alliance => {
                             setupAllianceListener(alliance);
                         });
+                        
+                        // WICHTIG: Explizit COB als aktive Allianz setzen
+                        setupAllianceListener(currentAlliance);
+                        localPlayers = allAlliancesData[currentAlliance] || {};
+                        reorganizeGroups();
                     }
                 });
 
