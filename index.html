@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kingshot Vikings Event - Alliance Portal</title>
     <style>
+        /* ===== GLOBAL STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -19,6 +20,7 @@
             overflow-x: hidden;
         }
 
+        /* Background grid pattern */
         body::before {
             content: '';
             position: fixed;
@@ -39,6 +41,7 @@
             z-index: 2;
         }
 
+        /* ===== HERO SECTION ===== */
         .hero-section {
             text-align: center;
             margin-bottom: 60px;
@@ -51,6 +54,7 @@
             position: relative;
         }
 
+        /* Admin toggle button in hero */
         .admin-toggle-btn {
             position: absolute;
             top: 20px;
@@ -73,6 +77,7 @@
             box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
         }
 
+        /* ===== ADMIN SECTION ===== */
         .admin-section {
             position: absolute;
             top: 80px;
@@ -133,6 +138,7 @@
             transform: translateY(-2px);
         }
 
+        /* Admin controls (shown when logged in) */
         .admin-controls {
             display: none;
             flex-direction: column;
@@ -176,6 +182,7 @@
             display: block;
         }
 
+        /* ===== HERO CONTENT ===== */
         .hero-title {
             color: white;
             font-size: 3.5rem;
@@ -217,6 +224,21 @@
             line-height: 1.6;
         }
 
+        /* Feature highlight box */
+        .feature-highlight {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .feature-highlight strong {
+            color: white;
+        }
+
+        /* ===== ALLIANCE SELECTOR ===== */
         .alliance-selector {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -237,6 +259,7 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
 
+        /* Alliance-specific colored borders */
         .alliance-card::before {
             content: '';
             position: absolute;
@@ -287,6 +310,7 @@
             line-height: 1.5;
         }
 
+        /* Alliance statistics */
         .alliance-stats {
             display: flex;
             justify-content: space-around;
@@ -329,6 +353,7 @@
             transform: translateY(-2px);
         }
 
+        /* ===== GUIDES SECTION ===== */
         .guides-section {
             margin-bottom: 60px;
         }
@@ -348,6 +373,7 @@
             gap: 15px;
         }
 
+        /* Admin add button for sections */
         .section-title .admin-add-btn {
             backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.1);
@@ -384,6 +410,7 @@
             color: initial;
         }
 
+        /* ===== GUIDE CARDS ===== */
         .guides-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -406,6 +433,7 @@
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
         }
 
+        /* Admin controls for guide cards */
         .guide-admin-controls {
             position: absolute;
             top: 15px;
@@ -416,6 +444,9 @@
 
         .guide-admin-controls.show {
             display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .guide-admin-btn {
@@ -458,6 +489,7 @@
             margin-bottom: 20px;
         }
 
+        /* Guide image container */
         .guide-image {
             width: 100%;
             height: 200px;
@@ -486,6 +518,7 @@
             object-fit: cover;
         }
 
+        /* ===== INFO SECTION ===== */
         .info-section {
             backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.1);
@@ -503,15 +536,151 @@
             text-align: center;
         }
 
-        .footer {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            margin-top: 60px;
-            padding: 20px 0;
+        /* Info posts */
+        .info-post {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
         }
 
-        /* Modal Styles */
+        .info-post:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Admin controls for info posts */
+        .info-post-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: none;
+            gap: 5px;
+        }
+
+        .info-post-controls.show {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .info-post-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-post-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .info-post-btn.edit {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .info-post-btn.delete {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .info-post-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-post-content {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .info-post-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .default-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        /* ===== DRAG & DROP STYLES ===== */
+        .draggable-post {
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+        
+        .draggable-post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Visual feedback during dragging */
+        .draggable-post.drag-over {
+            border: 2px dashed #2196F3 !important;
+            background: rgba(33, 150, 243, 0.1) !important;
+            transform: scale(1.02);
+        }
+        
+        .draggable-post.drag-target {
+            opacity: 0.7;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Drag handle styles */
+        .drag-handle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            cursor: grab;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            line-height: 1;
+            margin-right: 5px;
+        }
+        
+        .drag-handle:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        /* Empty state styling */
+        .empty-state {
+            border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+            opacity: 0.7;
+        }
+        
+        .empty-state:hover {
+            transform: none !important;
+            cursor: default !important;
+        }
+
+        /* ===== MODAL STYLES ===== */
         .modal {
             display: none;
             position: fixed;
@@ -572,6 +741,7 @@
             color: #333;
         }
 
+        /* Form styles */
         .form-group {
             margin-bottom: 20px;
         }
@@ -603,36 +773,7 @@
             min-height: 100px;
         }
 
-        .file-upload {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .file-upload input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .file-upload-label {
-            display: block;
-            padding: 12px 15px;
-            border: 2px dashed #ddd;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f9f9f9;
-        }
-
-        .file-upload:hover .file-upload-label {
-            border-color: #2196F3;
-            background: #f0f8ff;
-        }
-
+        /* Image preview */
         .image-preview {
             margin-top: 15px;
             text-align: center;
@@ -645,6 +786,7 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
+        /* Form action buttons */
         .form-actions {
             display: flex;
             gap: 15px;
@@ -682,6 +824,7 @@
             box-shadow: 0 8px 16px rgba(102, 102, 102, 0.4);
         }
 
+        /* Loading spinner */
         .loading-spinner {
             display: none;
             width: 20px;
@@ -702,6 +845,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* ===== NOTIFICATION ===== */
         .notification {
             position: fixed;
             top: 20px;
@@ -729,103 +873,16 @@
             background: rgba(33, 150, 243, 0.95);
         }
 
-        .info-post {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .info-post:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .info-post-controls {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: none;
-            gap: 5px;
-        }
-
-        .info-post-controls.show {
-            display: flex;
-        }
-
-        .info-post-btn {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            transition: all 0.3s ease;
-        }
-
-        .info-post-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .info-post-btn.edit {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-        }
-
-        .info-post-btn.delete {
-            background: linear-gradient(45deg, #f44336, #d32f2f);
-        }
-
-        .info-post-title {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-post-content {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-
-        .info-post-image {
-            width: 100%;
-            max-height: 200px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-
-        .default-info {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
-            line-height: 1.7;
+        /* ===== FOOTER ===== */
+        .footer {
             text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 60px;
+            padding: 20px 0;
         }
 
-        .feature-highlight {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid rgba(76, 175, 80, 0.4);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .feature-highlight strong {
-            color: white;
-        }
-
+        /* ===== RESPONSIVE DESIGN ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -885,34 +942,55 @@
                 width: 95%;
                 padding: 20px;
             }
+
+            /* Mobile drag & drop adjustments */
+            .guide-admin-controls.show,
+            .info-post-controls.show {
+                justify-content: center;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .drag-handle {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Hero Section -->
+        <!-- ===== HERO SECTION ===== -->
         <div class="hero-section">
+            <!-- Admin toggle button -->
             <button class="admin-toggle-btn" onclick="toggleAdminSection()" title="Admin Login">👑</button>
             
+            <!-- Admin panel (hidden by default) -->
             <div class="admin-section" id="adminSection">
                 <div class="admin-status" id="adminStatus">Admin Mode Active</div>
                 
                 <h3>🛡️ Admin Access</h3>
+                
+                <!-- Login form -->
                 <div class="admin-login" id="adminLogin">
                     <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
                     <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
                     <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
                 </div>
                 
+                <!-- Admin controls (shown when logged in) -->
                 <div class="admin-controls" id="adminControls">
                     <button class="admin-btn" onclick="adminLogout()">🚪 Logout</button>
                     <button class="admin-btn" onclick="manageContent()">📝 Manage Content</button>
                     <button class="admin-btn danger" onclick="clearAllPosts()">🗑️ Clear All Posts</button>
                 </div>
                 
+                <!-- Error messages -->
                 <div id="authError" style="color: #f44336; font-size: 0.8rem; margin-top: 10px; text-align: center;"></div>
             </div>
 
+            <!-- Main hero content -->
             <h1 class="hero-title">
                 <img src="logo.png" class="hero-logo" alt="Logo">
                 Kingshot Vikings Event
@@ -924,13 +1002,15 @@
                 march coordination.
             </p>
             
+            <!-- Feature showcase -->
             <div class="feature-highlight">
                 <strong>🔥 New Features:</strong> Real-time synchronization, Admin drag & drop, Search functionality, Mobile optimized
             </div>
         </div>
 
-        <!-- Alliance Selector -->
+        <!-- ===== ALLIANCE SELECTOR ===== -->
         <div class="alliance-selector">
+            <!-- COB Alliance Card -->
             <a href="/COB/" class="alliance-card cob">
                 <div class="alliance-name">COB Alliance</div>
                 <div class="alliance-description">
@@ -950,6 +1030,7 @@
                 <button class="enter-btn">Enter COB Portal</button>
             </a>
 
+            <!-- LUX Alliance Card -->
             <a href="/LUX/" class="alliance-card lux">
                 <div class="alliance-name">LUX Alliance</div>
                 <div class="alliance-description">
@@ -969,6 +1050,7 @@
                 <button class="enter-btn">Enter LUX Portal</button>
             </a>
 
+            <!-- GEW Alliance Card -->
             <a href="/GEW/" class="alliance-card gew">
                 <div class="alliance-name">GEW Alliance</div>
                 <div class="alliance-description">
@@ -989,52 +1071,41 @@
             </a>
         </div>
 
-        <!-- Guides Section -->
+        <!-- ===== GUIDES SECTION ===== -->
         <div class="guides-section">
             <h2 class="section-title">
                 <span class="emoji-icon">📚</span> Event Guides & Instructions
+                <!-- Admin add button (only visible to admins) -->
                 <button class="admin-add-btn" id="addGuideBtn" onclick="openPostModal()" title="Add New Guide">➕</button>
             </h2>
             
+            <!-- Guide cards container (populated by JavaScript) -->
             <div class="guides-grid" id="guidesContainer">
-                <div class="guide-card">
-                    <div class="guide-admin-controls" id="guideAdminControls">
-                        <button class="guide-admin-btn edit" onclick="editPost('default-1')" title="Edit">✏️</button>
-                        <button class="guide-admin-btn delete" onclick="deletePost('default-1')" title="Delete">🗑️</button>
-                    </div>
-                    <h3 class="guide-title">🎯 How to Register</h3>
-                    <div class="guide-content">
-                        <p><strong>Step 1:</strong> Select your alliance portal above</p>
-                        <p><strong>Step 2:</strong> Enter your player name exactly as it appears in-game</p>
-                        <p><strong>Step 3:</strong> Choose your march limit (1-6 or offline)</p>
-                        <p><strong>Step 4:</strong> Click "Join Event" to be automatically grouped</p>
-                    </div>
-                </div>
+                <!-- Content will be dynamically generated -->
             </div>
         </div>
 
-        <!-- Info Section -->
+        <!-- ===== INFO SECTION ===== -->
         <div class="info-section">
             <div class="section-title" style="margin-bottom: 30px;">
                 <span class="emoji-icon">🎮</span> Event Information
+                <!-- Admin add button (only visible to admins) -->
                 <button class="admin-add-btn" id="addInfoBtn" onclick="openPostModal('info')" title="Add Event Info">➕</button>
             </div>
+            <!-- Info posts container (populated by JavaScript) -->
             <div id="infoContainer">
-                <div class="info-content">
-                    <h3 style="color: white; margin-bottom: 20px; font-size: 1.6rem;">🎮 Event Information</h3>
-                    <p><strong>Event Status:</strong> Currently active - join your alliance now!</p>
-                    <p>Coordinate with your team, plan your strategies, and dominate the battlefield together.</p>
-                </div>
+                <!-- Content will be dynamically generated -->
             </div>
         </div>
 
+        <!-- ===== FOOTER ===== -->
         <div class="footer">
             <p>© 2025 Kingshot Event Platform | Developed by Lucindre</p>
             <p>Powered by Firebase & Netlify | Optimized for all devices</p>
         </div>
     </div>
 
-    <!-- Post Editor Modal -->
+    <!-- ===== POST EDITOR MODAL ===== -->
     <div class="modal" id="postModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1042,7 +1113,9 @@
                 <button class="close-btn" onclick="closePostModal()">×</button>
             </div>
             
+            <!-- Post creation/editing form -->
             <form id="postForm">
+                <!-- Post type selector -->
                 <div class="form-group">
                     <label class="form-label">Post Type</label>
                     <select class="form-input" id="postType" onchange="updatePostTypeFields()">
@@ -1051,27 +1124,32 @@
                     </select>
                 </div>
                 
+                <!-- Title input -->
                 <div class="form-group" id="titleGroup">
                     <label class="form-label">Title</label>
                     <input type="text" class="form-input" id="postTitle" placeholder="Enter post title..." maxlength="100">
                 </div>
                 
+                <!-- Icon input -->
                 <div class="form-group" id="iconGroup">
                     <label class="form-label">Icon (Emoji)</label>
                     <input type="text" class="form-input" id="postIcon" placeholder="🎯" maxlength="10">
                 </div>
                 
+                <!-- Content textarea -->
                 <div class="form-group">
                     <label class="form-label">Content</label>
                     <textarea class="form-input form-textarea" id="postContent" placeholder="Enter your content here..." rows="6"></textarea>
                 </div>
                 
+                <!-- Image URL input (only for guides) -->
                 <div class="form-group" id="imageGroup">
                     <label class="form-label">Image URL (optional)</label>
                     <input type="url" class="form-input" id="postImageUrl" placeholder="https://example.com/image.jpg">
                     <div class="image-preview" id="imagePreview"></div>
                 </div>
                 
+                <!-- Form action buttons -->
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">
@@ -1083,18 +1161,18 @@
         </div>
     </div>
 
-    <!-- Notification -->
+    <!-- ===== NOTIFICATION POPUP ===== -->
     <div id="notification" class="notification">
         <span id="notificationText"></span>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- ===== FIREBASE SDK ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
 
     <script>
-        // Firebase Configuration
+        // ===== FIREBASE CONFIGURATION =====
         const firebaseConfig = {
             apiKey: "AIzaSyBKHPSmLcbyZ8xItGLHZA-nEMB5E3joczw",
             authDomain: "kingshot-vikings-event.firebaseapp.com",
@@ -1105,14 +1183,19 @@
             appId: "1:308452962352:web:e18535f956c3386c033df5"
         };
 
-        // Global variables
+        // ===== GLOBAL VARIABLES =====
         let database, auth;
         let isAdmin = false;
         let currentUser = null;
         let posts = {};
         let currentEditingPost = null;
 
-        // Initialize Firebase and load content
+        // Drag & Drop variables
+        let draggedPostId = null;
+        let draggedPostType = null;
+        let currentDragTarget = null;
+
+        // ===== FIREBASE INITIALIZATION =====
         function initializeFirebase() {
             try {
                 firebase.initializeApp(firebaseConfig);
@@ -1121,7 +1204,7 @@
                 
                 console.log('Firebase initialized successfully');
                 
-                // Set up authentication state listener
+                // Listen for authentication state changes
                 auth.onAuthStateChanged((user) => {
                     if (user) {
                         currentUser = user;
@@ -1134,10 +1217,10 @@
                     }
                 });
 
-                // Load alliance stats
+                // Load real-time alliance statistics
                 loadAllianceStats();
                 
-                // Load posts
+                // Load and listen for posts
                 loadPosts();
                 
             } catch (error) {
@@ -1146,7 +1229,7 @@
             }
         }
 
-        // Admin authentication
+        // ===== ADMIN AUTHENTICATION =====
         async function adminLogin() {
             const email = document.getElementById('adminEmail').value.trim();
             const password = document.getElementById('adminPassword').value;
@@ -1160,8 +1243,10 @@
                 document.getElementById('adminLoginBtn').disabled = true;
                 clearAuthError();
                 
+                // Authenticate with Firebase
                 await auth.signInWithEmailAndPassword(email, password);
                 
+                // Clear form and close panel
                 document.getElementById('adminEmail').value = '';
                 document.getElementById('adminPassword').value = '';
                 document.getElementById('adminSection').classList.remove('show');
@@ -1172,6 +1257,7 @@
                 console.error('Admin login error:', error);
                 let errorMessage = 'Login failed. Please check your credentials.';
                 
+                // Handle specific Firebase auth errors
                 switch (error.code) {
                     case 'auth/user-not-found':
                         errorMessage = 'Admin account not found.';
@@ -1212,11 +1298,13 @@
             } else {
                 section.classList.add('show');
                 if (!isAdmin) {
+                    // Focus on email input for quick login
                     document.getElementById('adminEmail').focus();
                 }
             }
         }
 
+        // ===== ADMIN UI MANAGEMENT =====
         function showAdminMode() {
             document.getElementById('adminStatus').classList.add('active');
             document.getElementById('adminLogin').style.display = 'none';
@@ -1224,7 +1312,7 @@
             document.getElementById('addGuideBtn').classList.add('show');
             document.getElementById('addInfoBtn').classList.add('show');
             
-            // Show admin controls on guide cards and info posts
+            // Show admin controls on all posts
             const adminControls = document.querySelectorAll('.guide-admin-controls, .info-post-controls');
             adminControls.forEach(control => control.classList.add('show'));
         }
@@ -1236,12 +1324,12 @@
             document.getElementById('addGuideBtn').classList.remove('show');
             document.getElementById('addInfoBtn').classList.remove('show');
             
-            // Hide admin controls on guide cards and info posts
+            // Hide admin controls on all posts
             const adminControls = document.querySelectorAll('.guide-admin-controls, .info-post-controls');
             adminControls.forEach(control => control.classList.remove('show'));
         }
 
-        // Posts management
+        // ===== POSTS MANAGEMENT =====
         function loadPosts() {
             const postsRef = database.ref('content/posts');
             postsRef.on('value', (snapshot) => {
@@ -1254,24 +1342,7 @@
             const guidesContainer = document.getElementById('guidesContainer');
             const infoContainer = document.getElementById('infoContainer');
             
-            // Keep default guide if no custom posts
-            const defaultGuide = `
-                <div class="guide-card">
-                    <div class="guide-admin-controls ${isAdmin ? 'show' : ''}">
-                        <button class="guide-admin-btn edit" onclick="editPost('default-1')" title="Edit">✏️</button>
-                        <button class="guide-admin-btn delete" onclick="deletePost('default-1')" title="Delete">🗑️</button>
-                    </div>
-                    <h3 class="guide-title">🎯 How to Register</h3>
-                    <div class="guide-content">
-                        <p><strong>Step 1:</strong> Select your alliance portal above</p>
-                        <p><strong>Step 2:</strong> Enter your player name exactly as it appears in-game</p>
-                        <p><strong>Step 3:</strong> Choose your march limit (1-6 or offline)</p>
-                        <p><strong>Step 4:</strong> Click "Join Event" to be automatically grouped</p>
-                    </div>
-                </div>
-            `;
-            
-            let guidesHTML = defaultGuide;
+            let guidesHTML = '';
             let infoHTML = '';
             
             // Separate guide posts and info posts
@@ -1286,36 +1357,84 @@
                 }
             });
             
-            // Add guide posts
-            guidePosts.forEach(([id, post]) => {
-                guidesHTML += `
-                    <div class="guide-card">
-                        <div class="guide-admin-controls ${isAdmin ? 'show' : ''}">
-                            <button class="guide-admin-btn edit" onclick="editPost('${id}')" title="Edit">✏️</button>
-                            <button class="guide-admin-btn delete" onclick="deletePost('${id}')" title="Delete">🗑️</button>
-                        </div>
-                        <h3 class="guide-title">${post.icon || '📋'} ${post.title}</h3>
-                        <div class="guide-content">
-                            ${post.content.replace(/\n/g, '<br>')}
-                        </div>
-                        ${post.imageUrl ? `
-                            <div class="guide-image">
-                                <img src="${post.imageUrl}" alt="${post.title}">
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
+            // Sort posts by order, with fallback to timestamp
+            guidePosts.sort(([idA, postA], [idB, postB]) => {
+                const orderA = postA.order !== undefined ? postA.order : postA.timestamp || 0;
+                const orderB = postB.order !== undefined ? postB.order : postB.timestamp || 0;
+                return orderA - orderB;
             });
             
-            // Add info posts or show default
+            infoPosts.sort(([idA, postA], [idB, postB]) => {
+                const orderA = postA.order !== undefined ? postA.order : postA.timestamp || 0;
+                const orderB = postB.order !== undefined ? postB.order : postB.timestamp || 0;
+                return orderA - orderB;
+            });
+            
+            // Generate guide cards HTML
+            if (guidePosts.length > 0) {
+                guidePosts.forEach(([id, post], index) => {
+                    guidesHTML += `
+                        <div class="guide-card ${isAdmin ? 'draggable-post' : ''}" 
+                            data-post-id="${id}" 
+                            data-post-type="guide"
+                            draggable="${isAdmin}"
+                            ondragstart="handlePostDragStart(event, '${id}', 'guide')"
+                            ondragend="handlePostDragEnd(event)"
+                            ondragover="handlePostDragOver(event)"
+                            ondragleave="handlePostDragLeave(event)"
+                            ondrop="handlePostDrop(event, '${id}', 'guide', ${index})">
+                            
+                            <div class="guide-admin-controls ${isAdmin ? 'show' : ''}">
+                                ${isAdmin ? `<div class="drag-handle" title="Drag to swap positions">⋮⋮</div>` : ''}
+                                <button class="guide-admin-btn edit" onclick="editPost('${id}')" title="Edit">✏️</button>
+                                <button class="guide-admin-btn delete" onclick="deletePost('${id}')" title="Delete">🗑️</button>
+                            </div>
+                            
+                            <h3 class="guide-title">${post.icon || '📋'} ${post.title}</h3>
+                            <div class="guide-content">
+                                ${post.content.replace(/\n/g, '<br>')}
+                            </div>
+                            ${post.imageUrl ? `
+                                <div class="guide-image">
+                                    <img src="${post.imageUrl}" alt="${post.title}">
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                // Show empty state when no guides exist
+                guidesHTML = `
+                    <div class="guide-card empty-state">
+                        <h3 class="guide-title">📝 No Guides Yet</h3>
+                        <div class="guide-content">
+                            <p>Use the ➕ button above to create your first guide!</p>
+                            ${isAdmin ? '<p><strong>Admin:</strong> Click the plus button to get started.</p>' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Generate info posts HTML
             if (infoPosts.length > 0) {
-                infoPosts.forEach(([id, post]) => {
+                infoPosts.forEach(([id, post], index) => {
                     infoHTML += `
-                        <div class="info-post">
+                        <div class="info-post ${isAdmin ? 'draggable-post' : ''}" 
+                            data-post-id="${id}" 
+                            data-post-type="info"
+                            draggable="${isAdmin}"
+                            ondragstart="handlePostDragStart(event, '${id}', 'info')"
+                            ondragend="handlePostDragEnd(event)"
+                            ondragover="handlePostDragOver(event)"
+                            ondragleave="handlePostDragLeave(event)"
+                            ondrop="handlePostDrop(event, '${id}', 'info', ${index})">
+                            
                             <div class="info-post-controls ${isAdmin ? 'show' : ''}">
+                                ${isAdmin ? `<div class="drag-handle" title="Drag to swap positions">⋮⋮</div>` : ''}
                                 <button class="info-post-btn edit" onclick="editPost('${id}')" title="Edit">✏️</button>
                                 <button class="info-post-btn delete" onclick="deletePost('${id}')" title="Delete">🗑️</button>
                             </div>
+                            
                             <div class="info-post-title">${post.icon || '📢'} ${post.title}</div>
                             <div class="info-post-content">
                                 ${post.content.replace(/\n/g, '<br>')}
@@ -1332,22 +1451,187 @@
                     <div class="default-info">
                         <p><strong>Event Status:</strong> Currently active - join your alliance now!</p>
                         <p>Coordinate with your team, plan your strategies, and dominate the battlefield together.</p>
+                        ${isAdmin ? '<p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;"><strong>Admin:</strong> Use the ➕ button above to add custom event information.</p>' : ''}
                     </div>
                 `;
             }
             
+            // Update the DOM
             guidesContainer.innerHTML = guidesHTML;
             infoContainer.innerHTML = infoHTML;
         }
 
-        // Post modal management
+        // ===== DRAG & DROP FUNCTIONALITY =====
+        function handlePostDragStart(event, postId, postType) {
+            if (!isAdmin) return;
+            
+            draggedPostId = postId;
+            draggedPostType = postType;
+            currentDragTarget = null; // Reset current target
+            
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", postId);
+            
+            // Visual feedback for dragged item
+            event.target.style.opacity = '0.5';
+            event.target.style.transform = 'rotate(2deg)';
+            
+            // Add subtle visual feedback to potential drop targets (NOT highlighted)
+            const allPosts = document.querySelectorAll(`[data-post-type="${postType}"]`);
+            allPosts.forEach(post => {
+                if (post.dataset.postId !== postId) {
+                    post.classList.add('drag-target');
+                }
+            });
+            
+            console.log(`Started dragging: ${postId} (${postType})`);
+        }
+
+        function handlePostDragEnd(event) {
+            // Reset visual feedback
+            event.target.style.opacity = '';
+            event.target.style.transform = '';
+            
+            // Remove ALL visual feedback from all posts
+            const allPosts = document.querySelectorAll('.draggable-post');
+            allPosts.forEach(post => {
+                post.classList.remove('drag-target', 'drag-over');
+            });
+            
+            // Clear drag state
+            draggedPostId = null;
+            draggedPostType = null;
+            currentDragTarget = null;
+        }
+
+        function handlePostDragOver(event) {
+            if (!isAdmin || !draggedPostId) return;
+            
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const targetElement = event.currentTarget;
+            const targetType = targetElement.dataset.postType;
+            const targetId = targetElement.dataset.postId;
+            
+            // Only allow drops on same type and not on self
+            if (targetType === draggedPostType && targetId !== draggedPostId) {
+                // Remove highlight from previous target
+                if (currentDragTarget && currentDragTarget !== targetElement) {
+                    currentDragTarget.classList.remove('drag-over');
+                }
+                
+                // Highlight current target
+                targetElement.classList.add('drag-over');
+                currentDragTarget = targetElement;
+            }
+        }
+
+        function handlePostDragLeave(event) {
+            if (!isAdmin || !draggedPostId) return;
+            
+            const targetElement = event.currentTarget;
+            
+            // Only remove highlight if we're actually leaving this element
+            // (not just moving to a child element)
+            if (!targetElement.contains(event.relatedTarget)) {
+                targetElement.classList.remove('drag-over');
+                if (currentDragTarget === targetElement) {
+                    currentDragTarget = null;
+                }
+            }
+        }
+
+        async function handlePostDrop(event, targetPostId, targetPostType, targetIndex) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Remove drag-over styling
+            event.currentTarget.classList.remove('drag-over');
+            
+            // Validate drop operation
+            if (!isAdmin || !draggedPostId || draggedPostType !== targetPostType || draggedPostId === targetPostId) {
+                console.log('Drop ignored - invalid operation');
+                return;
+            }
+            
+            console.log(`Dropping ${draggedPostId} onto ${targetPostId}`);
+            
+            try {
+                await swapPosts(draggedPostId, targetPostId, targetPostType);
+                showNotification(`Posts swapped successfully!`, 'success');
+            } catch (error) {
+                console.error('Error swapping posts:', error);
+                showNotification('Failed to swap posts!', 'error');
+            }
+        }
+
+        async function swapPosts(postId1, postId2, postType) {
+            console.log(`Swapping ${postId1} with ${postId2}`);
+            
+            // Get the current posts data
+            const post1 = posts[postId1];
+            const post2 = posts[postId2];
+            
+            if (!post1 || !post2) {
+                throw new Error('Posts not found');
+            }
+            
+            // Get current order values (or assign based on timestamp if no order exists)
+            const order1 = post1.order !== undefined ? post1.order : post1.timestamp || 0;
+            const order2 = post2.order !== undefined ? post2.order : post2.timestamp || 0;
+            
+            console.log(`Swapping orders: ${order1} <-> ${order2}`);
+            
+            // Simple order swap in Firebase
+            const updates = {};
+            updates[`content/posts/${postId1}/order`] = order2;
+            updates[`content/posts/${postId2}/order`] = order1;
+            
+            // Save to Firebase
+            await database.ref().update(updates);
+            
+            console.log('Swap completed successfully');
+        }
+
+        // Reorder posts in Firebase
+        async function reorderPosts(draggedId, targetId, postType, targetIndex) {
+            // Get all posts of the same type, sorted by current order
+            const postsOfType = Object.entries(posts)
+                .filter(([id, post]) => post.type === postType)
+                .sort(([idA, postA], [idB, postB]) => {
+                    const orderA = postA.order || 999;
+                    const orderB = postB.order || 999;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return (postA.timestamp || 0) - (postB.timestamp || 0);
+                });
+            
+            // Remove dragged post from current position
+            const draggedIndex = postsOfType.findIndex(([id]) => id === draggedId);
+            const [draggedPost] = postsOfType.splice(draggedIndex, 1);
+            
+            // Insert at target position
+            const newTargetIndex = targetIndex > draggedIndex ? targetIndex - 1 : targetIndex;
+            postsOfType.splice(newTargetIndex, 0, draggedPost);
+            
+            // Update order values for all posts
+            const updates = {};
+            postsOfType.forEach(([id, post], index) => {
+                updates[`content/posts/${id}/order`] = index;
+            });
+            
+            // Save to Firebase
+            await database.ref().update(updates);
+        }
+
+        // ===== POST MODAL MANAGEMENT =====
         function openPostModal(postId = null, defaultType = 'guide') {
             if (!isAdmin) {
                 showNotification('Admin access required!', 'error');
                 return;
             }
             
-            // If postId is a type string (like 'info'), treat it as default type
+            // Handle type parameter
             if (postId === 'info' || postId === 'guide') {
                 defaultType = postId;
                 postId = null;
@@ -1363,7 +1647,7 @@
             document.getElementById('imagePreview').innerHTML = '';
             
             if (postId && posts[postId]) {
-                // Edit mode
+                // Edit existing post
                 title.textContent = 'Edit Post';
                 const post = posts[postId];
                 document.getElementById('postType').value = post.type;
@@ -1372,13 +1656,14 @@
                 document.getElementById('postContent').value = post.content;
                 document.getElementById('postImageUrl').value = post.imageUrl || '';
                 
+                // Show image preview if exists
                 if (post.imageUrl) {
                     document.getElementById('imagePreview').innerHTML = `
                         <img src="${post.imageUrl}" alt="Current image">
                     `;
                 }
             } else {
-                // Create mode
+                // Create new post
                 title.textContent = 'Create New Post';
                 document.getElementById('postType').value = defaultType;
             }
@@ -1394,17 +1679,12 @@
 
         function updatePostTypeFields() {
             const type = document.getElementById('postType').value;
-            const titleGroup = document.getElementById('titleGroup');
-            const iconGroup = document.getElementById('iconGroup');
             const imageGroup = document.getElementById('imageGroup');
             
+            // Only show image field for guide posts
             if (type === 'info') {
-                titleGroup.style.display = 'block';
-                iconGroup.style.display = 'block';
                 imageGroup.style.display = 'none';
             } else {
-                titleGroup.style.display = 'block';
-                iconGroup.style.display = 'block';
                 imageGroup.style.display = 'block';
             }
         }
@@ -1420,85 +1700,19 @@
             }
         }
 
-        // Handle form submission
-        document.getElementById('postForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!isAdmin) {
-                showNotification('Admin access required!', 'error');
-                return;
-            }
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const spinner = document.getElementById('saveSpinner');
-            const buttonText = document.getElementById('saveButtonText');
-            
-            try {
-                submitBtn.disabled = true;
-                spinner.classList.add('show');
-                buttonText.textContent = 'Saving...';
-                
-                const postData = {
-                    type: document.getElementById('postType').value,
-                    title: document.getElementById('postTitle').value.trim(),
-                    icon: document.getElementById('postIcon').value.trim(),
-                    content: document.getElementById('postContent').value.trim(),
-                    timestamp: Date.now(),
-                    author: currentUser.email
-                };
-                
-                // Add image URL if provided
-                const imageUrl = document.getElementById('postImageUrl').value.trim();
-                if (imageUrl) {
-                    postData.imageUrl = imageUrl;
-                }
-                
-                if (!postData.title || !postData.content) {
-                    throw new Error('Title and content are required');
-                }
-                
-                // Save to database
-                const postId = currentEditingPost || `post_${Date.now()}`;
-                await database.ref(`content/posts/${postId}`).set(postData);
-                
-                closePostModal();
-                showNotification(`Post ${currentEditingPost ? 'updated' : 'created'} successfully!`, 'success');
-                
-            } catch (error) {
-                console.error('Error saving post:', error);
-                showNotification(error.message || 'Failed to save post', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                spinner.classList.remove('show');
-                buttonText.textContent = 'Save Post';
-            }
-        });
-
+        // ===== POST CRUD OPERATIONS =====
         async function editPost(postId) {
             if (!isAdmin) {
                 showNotification('Admin access required!', 'error');
                 return;
             }
             
-            if (postId === 'default-1') {
-                // Edit default post - create a new post with default content
-                openPostModal();
-                document.getElementById('postTitle').value = 'How to Register';
-                document.getElementById('postIcon').value = '🎯';
-                document.getElementById('postContent').value = 'Step 1: Select your alliance portal above\nStep 2: Enter your player name exactly as it appears in-game\nStep 3: Choose your march limit (1-6 or offline)\nStep 4: Click "Join Event" to be automatically grouped';
-            } else {
-                openPostModal(postId);
-            }
+            openPostModal(postId);
         }
 
         async function deletePost(postId) {
             if (!isAdmin) {
                 showNotification('Admin access required!', 'error');
-                return;
-            }
-            
-            if (postId === 'default-1') {
-                showNotification('Cannot delete default guide', 'error');
                 return;
             }
             
@@ -1538,7 +1752,7 @@
             showNotification('Content management - use the + button to add new guides!', 'info');
         }
 
-        // Alliance stats loading
+        // ===== ALLIANCE STATISTICS =====
         function loadAllianceStats() {
             const alliances = ['COB', 'LUX', 'GEW'];
             
@@ -1558,6 +1772,7 @@
         function calculateGroupCount(playersData) {
             const playersByMarchLimit = {};
             
+            // Group players by march limit
             Object.entries(playersData).forEach(([playerName, playerData]) => {
                 const marchLimit = playerData.marchLimit || 3;
                 if (!playersByMarchLimit[marchLimit]) {
@@ -1566,6 +1781,7 @@
                 playersByMarchLimit[marchLimit].push(playerName);
             });
             
+            // Calculate total groups needed
             let totalGroups = 0;
             Object.entries(playersByMarchLimit).forEach(([marchLimit, players]) => {
                 const groupSize = marchLimit === 'offline' ? 4 : parseInt(marchLimit);
@@ -1583,7 +1799,7 @@
             if (groupsEl) groupsEl.textContent = groupCount;
         }
 
-        // Utility functions
+        // ===== UTILITY FUNCTIONS =====
         function showAuthError(message) {
             document.getElementById('authError').textContent = message;
         }
@@ -1600,13 +1816,15 @@
             notification.className = `notification ${type}`;
             notification.classList.add('show');
             
+            // Auto-hide after 4 seconds
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 4000);
         }
 
-        // Event listeners
+        // ===== EVENT LISTENERS =====
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Firebase
             initializeFirebase();
             
             // Admin password enter key
@@ -1619,7 +1837,7 @@
             // Image URL preview
             document.getElementById('postImageUrl').addEventListener('input', previewImage);
             
-            // Close modal on ESC key
+            // Modal keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closePostModal();
@@ -1630,6 +1848,78 @@
             document.getElementById('postModal').addEventListener('click', (e) => {
                 if (e.target.id === 'postModal') {
                     closePostModal();
+                }
+            });
+            
+            // Form submission handler
+            document.getElementById('postForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!isAdmin) {
+                    showNotification('Admin access required!', 'error');
+                    return;
+                }
+                
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const spinner = document.getElementById('saveSpinner');
+                const buttonText = document.getElementById('saveButtonText');
+                
+                try {
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    spinner.classList.add('show');
+                    buttonText.textContent = 'Saving...';
+                    
+                    const postType = document.getElementById('postType').value;
+                    const postData = {
+                        type: postType,
+                        title: document.getElementById('postTitle').value.trim(),
+                        icon: document.getElementById('postIcon').value.trim(),
+                        content: document.getElementById('postContent').value.trim(),
+                        timestamp: Date.now(),
+                        author: currentUser.email
+                    };
+                    
+                    // Add image URL if provided
+                    const imageUrl = document.getElementById('postImageUrl').value.trim();
+                    if (imageUrl) {
+                        postData.imageUrl = imageUrl;
+                    }
+                    
+                    // Validate required fields
+                    if (!postData.title || !postData.content) {
+                        throw new Error('Title and content are required');
+                    }
+                    
+                    // Set order for new posts (put at the end)
+                    if (!currentEditingPost) {
+                        const existingPosts = Object.values(posts).filter(p => p.type === postType);
+                        if (existingPosts.length === 0) {
+                            postData.order = 0;
+                        } else {
+                            // Find the highest order value and add 1
+                            const maxOrder = Math.max(...existingPosts.map(p => 
+                                p.order !== undefined ? p.order : p.timestamp || 0
+                            ));
+                            postData.order = maxOrder + 1;
+                        }
+                    }
+                    
+                    // Save to Firebase
+                    const postId = currentEditingPost || `post_${Date.now()}`;
+                    await database.ref(`content/posts/${postId}`).set(postData);
+                    
+                    closePostModal();
+                    showNotification(`Post ${currentEditingPost ? 'updated' : 'created'} successfully!`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error saving post:', error);
+                    showNotification(error.message || 'Failed to save post', 'error');
+                } finally {
+                    // Reset loading state
+                    submitBtn.disabled = false;
+                    spinner.classList.remove('show');
+                    buttonText.textContent = 'Save Post';
                 }
             });
         });
