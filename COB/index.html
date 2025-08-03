@@ -60,6 +60,7 @@
             right: 0;
             height: 4px;
             border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
         }
 
         .header h1 {
@@ -88,6 +89,7 @@
         }
 
         .alliance-badge {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
             color: white;
             padding: 10px 25px;
             border-radius: 20px;
@@ -376,7 +378,8 @@
         .input-group {
             position: relative;
             flex: 1;
-            max-width: 300px;
+            max-width: 250px;
+            min-width: 200px;
         }
 
         .input-label {
@@ -500,6 +503,7 @@
             right: 0;
             height: 4px;
             border-radius: 20px 20px 0 0;
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
         }
 
         .group.offline-group {
@@ -557,6 +561,17 @@
             margin-top: 8px;
             display: inline-block;
             box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+        }
+
+        .time-badge {
+            background: linear-gradient(45deg, #9C27B0, #673AB7);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: inline-block;
         }
 
         .player-list {
@@ -621,6 +636,12 @@
         .player-march {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        .player-time {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
             margin-top: 2px;
         }
 
@@ -731,6 +752,15 @@
             box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
         }
 
+        .floating-action.time-slot {
+            background: linear-gradient(45deg, #9C27B0, #673AB7);
+            box-shadow: 0 10px 20px rgba(156, 39, 176, 0.4);
+        }
+
+        .floating-action.time-slot:hover:not(:disabled) {
+            box-shadow: 0 15px 30px rgba(156, 39, 176, 0.6);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -773,6 +803,7 @@
             
             .input-group {
                 max-width: none;
+                min-width: auto;
             }
             
             .stats {
@@ -835,6 +866,16 @@
             margin-top: 5px;
             text-align: center;
         }
+
+        .rename-btn:hover,
+        .reset-name-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.1);
+        }
+        
+        .group-title-row {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -843,7 +884,7 @@
             <a href="/" class="back-link">← Back to Alliance Selection</a>
             
             <h1><img src="../logo.png" class="header-logo"> Kingshot Vikings Event</h1>
-            <div class="alliance-badge">COB Alliance</div>
+            <div class="alliance-badge">🔥 COB Alliance</div>
             
             <div class="admin-status" id="adminStatus">
                 Admin Mode Active
@@ -888,7 +929,7 @@
 
         <div class="input-section">
             <div class="search-section">
-                <h3>🔍 Find Your Group</h3>
+                <h3>🔍 Find Your COB Group</h3>
                 <div class="search-form">
                     <input type="text" id="searchInput" class="search-input" placeholder="Search for your name..." maxlength="50">
                     <button onclick="clearSearch()" class="clear-search-btn" id="clearSearchBtn" style="display: none;">✕</button>
@@ -914,7 +955,13 @@
                         <option value="offline">Offline Player</option>
                     </select>
                 </div>
-                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>⚔️ Join Event</button>
+                <div class="input-group">
+                    <label class="input-label">Time Slot</label>
+                    <select id="timeSelect" class="march-select" disabled>
+                        <option value="at all times" selected>at all times</option>
+                    </select>
+                </div>
+                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>🔥 Join COB</button>
             </div>
         </div>
 
@@ -929,6 +976,7 @@
 
     <div class="floating-actions">
         <button onclick="toggleAdminSection()" class="floating-action admin-toggle" id="adminToggleBtn" title="Admin Login">👑</button>
+        <button onclick="showTimeSlotManager()" class="floating-action time-slot" id="timeSlotBtn" title="Manage Time Slots (Admin Only)" style="display: none;">🕒</button>
         <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All COB Players (Admin Only)" disabled style="display: none;">🗑️</button>
     </div>
 
@@ -967,6 +1015,15 @@
 
         // Initialize Kingshot with COB configuration
         let kingshot = new KingshotCore(COB_CONFIG);
+        
+        // Global function for time slot management
+        function showTimeSlotManager() {
+            if (kingshot && kingshot.showTimeSlotManager) {
+                kingshot.showTimeSlotManager();
+            } else {
+                console.error('showTimeSlotManager not available');
+            }
+        }
     </script>
 </body>
 </html>

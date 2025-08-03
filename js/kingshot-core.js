@@ -28,6 +28,7 @@ class KingshotCore {
         // State variables
         this.localPlayers = {};
         this.groups = [];
+        this.timeSlots = [];
         this.isAdmin = false;
         this.currentPlayerName = '';
         this.currentAdminUser = null;
@@ -139,7 +140,8 @@ class KingshotCore {
 
             // Set up players reference for this alliance only
             this.playersRef = this.database.ref(`event/alliances/${this.config.allianceName}/players`);
-            console.log(`${this.config.allianceName} playersRef initialized`);
+            this.timeSlotsRef = this.database.ref(`event/alliances/${this.config.allianceName}/timeSlots`);
+            console.log(`${this.config.allianceName} playersRef and timeSlotsRef initialized`);
             
             // Listen for player changes
             this.playersRef.on('value', (snapshot) => {
@@ -147,6 +149,16 @@ class KingshotCore {
                 this.localPlayers = data || {};
                 this.reorganizeGroups();
                 this.updateOnlineCount();
+            });
+
+            // Listen for time slots changes
+            this.timeSlotsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                this.timeSlots = data ? Object.values(data) : ['at all times'];
+                // Use setTimeout to ensure DOM is ready
+                setTimeout(() => {
+                    this.updateTimeSlotDropdown();
+                }, 100);
             });
 
             // Enable inputs when connected
@@ -167,6 +179,594 @@ class KingshotCore {
                 this.showFallbackMode();
             }, 2000);
         }
+    }
+
+    // Time Slot Management
+    updateTimeSlotDropdown() {
+        const timeSelect = document.getElementById('timeSelect');
+        if (!timeSelect) return;
+        
+        // Clear existing options
+        timeSelect.innerHTML = '';
+        
+        // Add time slots
+        this.timeSlots.forEach(timeSlot => {
+            const option = document.createElement('option');
+            option.value = timeSlot;
+            option.textContent = timeSlot;
+            if (timeSlot === 'at all times') {
+                option.selected = true;
+            }
+            timeSelect.appendChild(option);
+        });
+    }
+
+    showTimeSlotManager() {
+        if (!this.isAdmin) {
+            this.showNotification('Admin access required!', 'error');
+            return;
+        }
+        
+        this.createTimeSlotModal();
+    }
+
+    createTimeSlotModal() {
+        // Remove existing modal if present
+        const existingModal = document.getElementById('timeSlotModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Create modal HTML
+        const modalHTML = `
+            <div id="timeSlotModal" class="time-slot-modal">
+                <div class="time-slot-modal-content">
+                    <div class="time-slot-modal-header">
+                        <h2>🕒 Manage Time Slots</h2>
+                        <button class="close-btn" onclick="closeTimeSlotModal()">×</button>
+                    </div>
+                    
+                    <div class="time-slot-form">
+                        <h3>Add New Time Slot</h3>
+                        <div class="time-input-group">
+                            <input type="text" id="newTimeSlot" placeholder="e.g., 20:00 UTC, Morning, Evening..." maxlength="50">
+                            <button onclick="kingshot.addTimeSlot()" class="add-time-btn">➕ Add</button>
+                        </div>
+                    </div>
+                    
+                    <div class="current-time-slots">
+                        <h3>Current Time Slots</h3>
+                        <div id="timeSlotsList" class="time-slots-list">
+                            ${this.renderTimeSlotsList()}
+                        </div>
+                    </div>
+                    
+                    <div class="time-slot-actions">
+                        <button onclick="kingshot.resetToDefaultTimeSlots()" class="reset-btn">🔄 Reset to Default</button>
+                        <button onclick="closeTimeSlotModal()" class="close-modal-btn">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Add modal styles
+        this.addTimeSlotModalStyles();
+        
+        // Show modal
+        document.getElementById('timeSlotModal').style.display = 'flex';
+        
+        // Focus on input
+        document.getElementById('newTimeSlot').focus();
+        
+        // Add enter key listener
+        document.getElementById('newTimeSlot').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.addTimeSlot();
+            }
+        });
+    }
+
+    renderTimeSlotsList() {
+        return this.timeSlots.map(timeSlot => `
+            <div class="time-slot-item">
+                <span class="time-slot-text">${timeSlot}</span>
+                <div class="time-slot-controls">
+                    <button onclick="kingshot.editTimeSlot('${timeSlot}')" class="edit-time-btn" title="Edit">✏️</button>
+                    ${timeSlot !== 'at all times' ? `<button onclick="kingshot.deleteTimeSlot('${timeSlot}')" class="delete-time-btn" title="Delete">🗑️</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async addTimeSlot() {
+        const input = document.getElementById('newTimeSlot');
+        const newTimeSlot = input.value.trim();
+        
+        if (!newTimeSlot) {
+            this.showNotification('Please enter a time slot!', 'error');
+            return;
+        }
+        
+        if (this.timeSlots.includes(newTimeSlot)) {
+            this.showNotification('This time slot already exists!', 'error');
+            return;
+        }
+        
+        try {
+            // Add to current time slots
+            const updatedTimeSlots = [...this.timeSlots, newTimeSlot];
+            
+            if (this.isConnected && this.timeSlotsRef) {
+                // Save to Firebase
+                const timeSlotData = {};
+                updatedTimeSlots.forEach((slot, index) => {
+                    timeSlotData[`slot_${index}`] = slot;
+                });
+                
+                await this.timeSlotsRef.set(timeSlotData);
+            } else {
+                // Update locally
+                this.timeSlots = updatedTimeSlots;
+                this.updateTimeSlotDropdown();
+            }
+            
+            // Clear input and refresh list
+            input.value = '';
+            this.refreshTimeSlotsList();
+            
+            this.showNotification(`Time slot "${newTimeSlot}" added successfully!`, 'success');
+            
+        } catch (error) {
+            console.error('Error adding time slot:', error);
+            this.showNotification('Failed to add time slot!', 'error');
+        }
+    }
+
+    async editTimeSlot(oldTimeSlot) {
+        const newTimeSlot = prompt(`Edit time slot:`, oldTimeSlot);
+        
+        if (!newTimeSlot || newTimeSlot.trim() === '' || newTimeSlot.trim() === oldTimeSlot) {
+            return;
+        }
+        
+        const trimmedNew = newTimeSlot.trim();
+        
+        if (this.timeSlots.includes(trimmedNew)) {
+            this.showNotification('This time slot already exists!', 'error');
+            return;
+        }
+        
+        try {
+            // Update time slots array
+            const updatedTimeSlots = this.timeSlots.map(slot => 
+                slot === oldTimeSlot ? trimmedNew : slot
+            );
+            
+            if (this.isConnected && this.timeSlotsRef) {
+                // Save to Firebase
+                const timeSlotData = {};
+                updatedTimeSlots.forEach((slot, index) => {
+                    timeSlotData[`slot_${index}`] = slot;
+                });
+                
+                await this.timeSlotsRef.set(timeSlotData);
+                
+                // Update all players who had the old time slot
+                const playersToUpdate = {};
+                Object.entries(this.localPlayers).forEach(([playerName, playerData]) => {
+                    if (playerData.timeSlot === oldTimeSlot) {
+                        playersToUpdate[`${playerName}/timeSlot`] = trimmedNew;
+                    }
+                });
+                
+                if (Object.keys(playersToUpdate).length > 0) {
+                    await this.playersRef.update(playersToUpdate);
+                }
+            } else {
+                // Update locally
+                this.timeSlots = updatedTimeSlots;
+                
+                // Update local players
+                Object.keys(this.localPlayers).forEach(playerName => {
+                    if (this.localPlayers[playerName].timeSlot === oldTimeSlot) {
+                        this.localPlayers[playerName].timeSlot = trimmedNew;
+                    }
+                });
+                
+                this.updateTimeSlotDropdown();
+                this.reorganizeGroups();
+            }
+            
+            this.refreshTimeSlotsList();
+            this.showNotification(`Time slot updated to "${trimmedNew}"!`, 'success');
+            
+        } catch (error) {
+            console.error('Error editing time slot:', error);
+            this.showNotification('Failed to edit time slot!', 'error');
+        }
+    }
+
+    async deleteTimeSlot(timeSlot) {
+        if (timeSlot === 'at all times') {
+            this.showNotification('Cannot delete default time slot!', 'error');
+            return;
+        }
+        
+        // Check if any players are using this time slot
+        const playersUsingSlot = Object.entries(this.localPlayers).filter(
+            ([_, playerData]) => playerData.timeSlot === timeSlot
+        );
+        
+        if (playersUsingSlot.length > 0) {
+            const confirm = window.confirm(
+                `${playersUsingSlot.length} player(s) are using this time slot. ` +
+                `They will be moved to "at all times". Continue?`
+            );
+            if (!confirm) return;
+        }
+        
+        try {
+            // Remove from time slots array
+            const updatedTimeSlots = this.timeSlots.filter(slot => slot !== timeSlot);
+            
+            if (this.isConnected && this.timeSlotsRef) {
+                // Save to Firebase
+                const timeSlotData = {};
+                updatedTimeSlots.forEach((slot, index) => {
+                    timeSlotData[`slot_${index}`] = slot;
+                });
+                
+                await this.timeSlotsRef.set(timeSlotData);
+                
+                // Update affected players
+                if (playersUsingSlot.length > 0) {
+                    const playersToUpdate = {};
+                    playersUsingSlot.forEach(([playerName]) => {
+                        playersToUpdate[`${playerName}/timeSlot`] = 'at all times';
+                    });
+                    await this.playersRef.update(playersToUpdate);
+                }
+            } else {
+                // Update locally
+                this.timeSlots = updatedTimeSlots;
+                
+                // Update affected players locally
+                playersUsingSlot.forEach(([playerName]) => {
+                    this.localPlayers[playerName].timeSlot = 'at all times';
+                });
+                
+                this.updateTimeSlotDropdown();
+                this.reorganizeGroups();
+            }
+            
+            this.refreshTimeSlotsList();
+            this.showNotification(`Time slot "${timeSlot}" deleted!`, 'info');
+            
+        } catch (error) {
+            console.error('Error deleting time slot:', error);
+            this.showNotification('Failed to delete time slot!', 'error');
+        }
+    }
+
+    async resetToDefaultTimeSlots() {
+        if (!confirm('Reset all time slots to default? This will affect all players!')) {
+            return;
+        }
+        
+        try {
+            const defaultTimeSlots = ['at all times'];
+            
+            if (this.isConnected && this.timeSlotsRef) {
+                // Save to Firebase
+                const timeSlotData = {
+                    'slot_0': 'at all times'
+                };
+                
+                await this.timeSlotsRef.set(timeSlotData);
+                
+                // Update all players to default time slot
+                const playersToUpdate = {};
+                Object.keys(this.localPlayers).forEach(playerName => {
+                    playersToUpdate[`${playerName}/timeSlot`] = 'at all times';
+                });
+                
+                if (Object.keys(playersToUpdate).length > 0) {
+                    await this.playersRef.update(playersToUpdate);
+                }
+            } else {
+                // Update locally
+                this.timeSlots = defaultTimeSlots;
+                
+                Object.keys(this.localPlayers).forEach(playerName => {
+                    this.localPlayers[playerName].timeSlot = 'at all times';
+                });
+                
+                this.updateTimeSlotDropdown();
+                this.reorganizeGroups();
+            }
+            
+            this.refreshTimeSlotsList();
+            this.showNotification('Time slots reset to default!', 'info');
+            
+        } catch (error) {
+            console.error('Error resetting time slots:', error);
+            this.showNotification('Failed to reset time slots!', 'error');
+        }
+    }
+
+    refreshTimeSlotsList() {
+        const listContainer = document.getElementById('timeSlotsList');
+        if (listContainer) {
+            listContainer.innerHTML = this.renderTimeSlotsList();
+        }
+    }
+
+    closeTimeSlotModal() {
+        const modal = document.getElementById('timeSlotModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.remove();
+        }
+    }
+
+    addTimeSlotModalStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .time-slot-modal {
+                display: none;
+                position: fixed;
+                z-index: 2000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .time-slot-modal-content {
+                backdrop-filter: blur(20px);
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                color: #333;
+            }
+            
+            .time-slot-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                border-bottom: 2px solid #eee;
+                padding-bottom: 15px;
+            }
+            
+            .time-slot-modal-header h2 {
+                margin: 0;
+                color: #333;
+                font-size: 1.5rem;
+            }
+            
+            .close-btn {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: #666;
+                padding: 5px;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+            
+            .close-btn:hover {
+                background: rgba(0, 0, 0, 0.1);
+                color: #333;
+            }
+            
+            .time-slot-form {
+                margin-bottom: 30px;
+                padding: 20px;
+                background: rgba(33, 150, 243, 0.1);
+                border-radius: 15px;
+                border: 2px solid rgba(33, 150, 243, 0.2);
+            }
+            
+            .time-slot-form h3 {
+                margin: 0 0 15px 0;
+                color: #333;
+                font-size: 1.2rem;
+            }
+            
+            .time-input-group {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            
+            .time-input-group input {
+                flex: 1;
+                padding: 12px 15px;
+                border: 2px solid #ddd;
+                border-radius: 10px;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+            
+            .time-input-group input:focus {
+                outline: none;
+                border-color: #2196F3;
+                box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+            }
+            
+            .add-time-btn {
+                padding: 12px 20px;
+                background: linear-gradient(45deg, #4CAF50, #45a049);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: all 0.3s ease;
+                white-space: nowrap;
+            }
+            
+            .add-time-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(76, 175, 80, 0.4);
+            }
+            
+            .current-time-slots {
+                margin-bottom: 25px;
+            }
+            
+            .current-time-slots h3 {
+                margin: 0 0 15px 0;
+                color: #333;
+                font-size: 1.2rem;
+            }
+            
+            .time-slots-list {
+                max-height: 200px;
+                overflow-y: auto;
+                border: 2px solid #eee;
+                border-radius: 10px;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.5);
+            }
+            
+            .time-slot-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 15px;
+                margin: 5px 0;
+                background: rgba(255, 255, 255, 0.7);
+                border-radius: 8px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+            }
+            
+            .time-slot-item:hover {
+                background: rgba(255, 255, 255, 0.9);
+                transform: translateX(5px);
+            }
+            
+            .time-slot-text {
+                font-weight: 500;
+                color: #333;
+            }
+            
+            .time-slot-controls {
+                display: flex;
+                gap: 5px;
+            }
+            
+            .edit-time-btn,
+            .delete-time-btn {
+                background: none;
+                border: none;
+                padding: 5px 8px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+            }
+            
+            .edit-time-btn {
+                background: linear-gradient(45deg, #2196F3, #1976D2);
+                color: white;
+            }
+            
+            .edit-time-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+            }
+            
+            .delete-time-btn {
+                background: linear-gradient(45deg, #f44336, #d32f2f);
+                color: white;
+            }
+            
+            .delete-time-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4);
+            }
+            
+            .time-slot-actions {
+                display: flex;
+                gap: 15px;
+                justify-content: flex-end;
+                border-top: 2px solid #eee;
+                padding-top: 20px;
+            }
+            
+            .reset-btn,
+            .close-modal-btn {
+                padding: 12px 25px;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 1rem;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            }
+            
+            .reset-btn {
+                background: linear-gradient(45deg, #FF9800, #F57C00);
+                color: white;
+            }
+            
+            .reset-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(255, 152, 0, 0.4);
+            }
+            
+            .close-modal-btn {
+                background: linear-gradient(45deg, #666, #555);
+                color: white;
+            }
+            
+            .close-modal-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(102, 102, 102, 0.4);
+            }
+            
+            @media (max-width: 768px) {
+                .time-slot-modal-content {
+                    width: 95%;
+                    padding: 20px;
+                }
+                
+                .time-input-group {
+                    flex-direction: column;
+                }
+                
+                .time-input-group input {
+                    width: 100%;
+                }
+                
+                .time-slot-actions {
+                    flex-direction: column;
+                }
+                
+                .time-slot-item {
+                    flex-direction: column;
+                    gap: 10px;
+                    text-align: center;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     // Search functionality
@@ -209,8 +809,10 @@ class KingshotCore {
     async addPlayer() {
         const input = document.getElementById('playerInput');
         const marchSelect = document.getElementById('marchSelect');
+        const timeSelect = document.getElementById('timeSelect');
         const playerName = input.value.trim();
         const marchValue = marchSelect.value;
+        const timeValue = timeSelect.value;
         
         if (playerName === '') {
             this.showNotification('Please enter a player name!', 'error');
@@ -226,16 +828,18 @@ class KingshotCore {
             if (this.isConnected && this.playersRef) {
                 await this.playersRef.child(playerName).set({
                     marchLimit: marchValue,
+                    timeSlot: timeValue,
                     timestamp: Date.now()
                 });
                 this.currentPlayerName = playerName;
                 
                 const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
-                this.showNotification(`${playerName} joined ${this.config.allianceName} as ${displayText}!`, 'success');
+                this.showNotification(`${playerName} joined ${this.config.allianceName} as ${displayText} at ${timeValue}!`, 'success');
             } else {
                 // Fallback to local mode
                 this.localPlayers[playerName] = {
                     marchLimit: marchValue,
+                    timeSlot: timeValue,
                     timestamp: Date.now()
                 };
                 this.currentPlayerName = playerName;
@@ -245,7 +849,7 @@ class KingshotCore {
                 if (this.isAdmin) {
                     this.showNotification(`${playerName} added locally to ${this.config.allianceName}`, 'info');
                 } else {
-                    this.showNotification(`${playerName} joined ${this.config.allianceName} as ${displayText}!`, 'success');
+                    this.showNotification(`${playerName} joined ${this.config.allianceName} as ${displayText} at ${timeValue}!`, 'success');
                 }
             }
             
@@ -331,46 +935,52 @@ class KingshotCore {
     reorganizeGroups() {
         this.groups = [];
         
-        // Create an array of all players with their info and find earliest timestamp for each march limit
+        // Create an array of all players with their info and find earliest timestamp for each march limit + time slot combo
         const allPlayers = [];
-        const earliestTimestampByMarch = {};
+        const earliestTimestampByCombo = {};
         
         Object.entries(this.localPlayers).forEach(([playerName, playerData]) => {
             const marchLimit = playerData.marchLimit || 3;
+            const timeSlot = playerData.timeSlot || 'at all times';
             const timestamp = playerData.timestamp || 0;
             
             allPlayers.push({
                 name: playerName,
                 marchLimit: marchLimit,
+                timeSlot: timeSlot,
                 timestamp: timestamp
             });
             
-            // Track earliest timestamp for each march limit to determine group order
-            if (!earliestTimestampByMarch[marchLimit] || timestamp < earliestTimestampByMarch[marchLimit]) {
-                earliestTimestampByMarch[marchLimit] = timestamp;
+            // Create combo key for grouping
+            const comboKey = `${marchLimit}_${timeSlot}`;
+            
+            // Track earliest timestamp for each combo to determine group order
+            if (!earliestTimestampByCombo[comboKey] || timestamp < earliestTimestampByCombo[comboKey]) {
+                earliestTimestampByCombo[comboKey] = timestamp;
             }
         });
         
         // Sort players by timestamp (first come, first served)
         allPlayers.sort((a, b) => a.timestamp - b.timestamp);
         
-        // Group players by march limit but maintain timestamp order within groups
-        const playersByMarchLimit = {};
+        // Group players by march limit + time slot combo but maintain timestamp order within groups
+        const playersByCombo = {};
         allPlayers.forEach(player => {
-            const marchLimit = player.marchLimit;
-            if (!playersByMarchLimit[marchLimit]) {
-                playersByMarchLimit[marchLimit] = [];
+            const comboKey = `${player.marchLimit}_${player.timeSlot}`;
+            if (!playersByCombo[comboKey]) {
+                playersByCombo[comboKey] = [];
             }
-            playersByMarchLimit[marchLimit].push(player);
+            playersByCombo[comboKey].push(player);
         });
         
-        // Create groups ordered by earliest player timestamp in each march category
-        const marchLimitsByFirstPlayer = Object.keys(playersByMarchLimit).sort((a, b) => {
-            return earliestTimestampByMarch[a] - earliestTimestampByMarch[b];
+        // Create groups ordered by earliest player timestamp in each combo
+        const combosByFirstPlayer = Object.keys(playersByCombo).sort((a, b) => {
+            return earliestTimestampByCombo[a] - earliestTimestampByCombo[b];
         });
         
-        marchLimitsByFirstPlayer.forEach(marchLimit => {
-            const players = playersByMarchLimit[marchLimit];
+        combosByFirstPlayer.forEach(comboKey => {
+            const players = playersByCombo[comboKey];
+            const [marchLimit, timeSlot] = comboKey.split('_', 2);
             let groupSize;
             let isNewGroup = false;
             
@@ -408,6 +1018,7 @@ class KingshotCore {
                 this.groups.push({
                     players: group,
                     marchLimit: marchLimit,
+                    timeSlot: timeSlot,
                     displayMarchLimit: displayMarchLimit,
                     groupNumber: this.groups.length + 1,
                     maxSize: groupSize,
@@ -548,15 +1159,18 @@ class KingshotCore {
             if (this.isConnected && this.playersRef) {
                 await this.playersRef.child(playerName).update({
                     marchLimit: targetGroup.marchLimit,
+                    timeSlot: targetGroup.timeSlot,
                     timestamp: Date.now(),
                 });
             } else {
                 this.localPlayers[playerName].marchLimit = targetGroup.marchLimit;
+                this.localPlayers[playerName].timeSlot = targetGroup.timeSlot;
                 this.localPlayers[playerName].timestamp = Date.now();
                 this.reorganizeGroups();
             }
 
-            this.showNotification(`${playerName} moved to ${this.config.allianceName} ${targetGroup.marchLimit === 'offline' ? 'offline' : targetGroup.marchLimit + ' march'} group`, "info");
+            const groupDesc = targetGroup.marchLimit === 'offline' ? 'offline' : `${targetGroup.marchLimit} march`;
+            this.showNotification(`${playerName} moved to ${this.config.allianceName} ${groupDesc} group (${targetGroup.timeSlot})`, "info");
         } catch (error) {
             console.error("Error moving player:", error);
             this.showNotification("Failed to move player!", "error");
@@ -587,6 +1201,7 @@ class KingshotCore {
                 // Remove custom group name and set new march limit - new group gets default name
                 await this.playersRef.child(playerName).update({
                     marchLimit: uniqueMarchLimit,
+                    timeSlot: player.timeSlot, // Keep original time slot
                     timestamp: Date.now(),
                     customGroupName: null // Remove custom name - new group gets default name
                 });
@@ -599,7 +1214,7 @@ class KingshotCore {
             }
 
             const displayMarch = originalMarchLimit === 'offline' ? 'offline' : `${originalMarchLimit} march`;
-            this.showNotification(`${playerName} moved to new ${displayMarch} group with default name`, "success");
+            this.showNotification(`${playerName} moved to new ${displayMarch} group (${player.timeSlot})`, "success");
         } catch (error) {
             console.error("Error creating new group:", error);
             this.showNotification("Failed to create new group!", "error");
@@ -822,6 +1437,7 @@ class KingshotCore {
                                         ${group.customName ? `<button onclick="kingshot.resetGroupName(${group.groupNumber - 1})" class="reset-name-btn admin" title="Admin: Reset to default name" style="background: linear-gradient(45deg, #FF9800, #F57C00); color: white; border: none; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 0.7rem; opacity: 0.8; transition: all 0.3s ease;">🔄</button>` : ''}
                                     ` : ''}
                                 </div>
+                                <div class="time-badge" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; display: inline-block;">${group.timeSlot}</div>
                                 <div class="march-badge ${group.isOffline ? 'offline-badge' : ''} ${group.isCustom ? 'custom-badge' : ''}">${group.isOffline ? 'Offline' : group.isCustom ? 'Custom Group' : `${group.displayMarchLimit} march${group.displayMarchLimit > 1 ? 'es' : ''}`}</div>
                                 <div class="group-count">
                                     ${group.players.length}/${group.maxSize} players
@@ -846,6 +1462,7 @@ class KingshotCore {
                                             <div class="player-info">
                                                 <span class="player-name">${player.name}</span>
                                                 <div class="player-march">${player.marchLimit.split('_newgroup_')[0] === 'offline' ? 'Offline player' : `${player.marchLimit.split('_newgroup_')[0]} march limit`}</div>
+                                                <div class="player-time" style="color: rgba(255, 255, 255, 0.6); font-size: 0.75rem; margin-top: 2px;">${player.timeSlot || 'at all times'}</div>
                                             </div>
                                             
                                             ${this.isAdmin ? `<button onclick="kingshot.removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
@@ -904,6 +1521,20 @@ class KingshotCore {
     enableInterface() {
         document.getElementById('playerInput').disabled = false;
         document.getElementById('marchSelect').disabled = false;
+        
+        const timeSelect = document.getElementById('timeSelect');
+        if (timeSelect) {
+            timeSelect.disabled = false;
+            // Initialize with default option if empty
+            if (timeSelect.options.length === 0) {
+                const defaultOption = document.createElement('option');
+                defaultOption.value = 'at all times';
+                defaultOption.textContent = 'at all times';
+                defaultOption.selected = true;
+                timeSelect.appendChild(defaultOption);
+            }
+        }
+        
         document.getElementById('addBtn').disabled = false;
         document.getElementById('searchInput').disabled = false;
         document.getElementById('playerInput').focus();
@@ -932,6 +1563,12 @@ class KingshotCore {
         document.getElementById('clearBtn').style.display = 'block';
         document.getElementById('clearBtn').disabled = false;
         
+        // Show time slot button for admins
+        const timeSlotBtn = document.getElementById('timeSlotBtn');
+        if (timeSlotBtn) {
+            timeSlotBtn.style.display = 'block';
+        }
+        
         if (this.currentAdminUser) {
             const adminEmail = this.currentAdminUser.email;
             const displayEmail = adminEmail.length > 20 ? adminEmail.substring(0, 17) + '...' : adminEmail;
@@ -945,6 +1582,12 @@ class KingshotCore {
         document.getElementById('adminLogoutBtn').style.display = 'none';
         document.getElementById('clearBtn').style.display = 'none';
         document.getElementById('adminUser').textContent = '';
+        
+        // Hide time slot button for non-admins
+        const timeSlotBtn = document.getElementById('timeSlotBtn');
+        if (timeSlotBtn) {
+            timeSlotBtn.style.display = 'none';
+        }
     }
 
     showAuthError(message) {
@@ -1035,6 +1678,24 @@ class KingshotCore {
                     this.handleCreateNewGroup(e);
                 }
             });
+
+            // ESC key to close time slot modal
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const timeSlotModal = document.getElementById('timeSlotModal');
+                    if (timeSlotModal && timeSlotModal.style.display === 'flex') {
+                        this.closeTimeSlotModal();
+                    }
+                }
+            });
+
+            // Close modal when clicking outside
+            document.addEventListener('click', (e) => {
+                const timeSlotModal = document.getElementById('timeSlotModal');
+                if (timeSlotModal && e.target === timeSlotModal) {
+                    this.closeTimeSlotModal();
+                }
+            });
         });
 
         // Handle visibility change to reconnect if needed
@@ -1055,3 +1716,17 @@ function toggleAdminSection() { kingshot.toggleAdminSection(); }
 function clearAllPlayers() { kingshot.clearAllPlayers(); }
 function renameGroup(groupIndex) { kingshot.renameGroup(groupIndex); }
 function resetGroupName(groupIndex) { kingshot.resetGroupName(groupIndex); }
+function showTimeSlotManager() { 
+    if (kingshot && kingshot.showTimeSlotManager) {
+        kingshot.showTimeSlotManager();
+    } else {
+        console.error('showTimeSlotManager not available');
+    }
+}
+
+// Close modal function needs to be available globally for the onclick handler
+function closeTimeSlotModal() {
+    if (kingshot && kingshot.closeTimeSlotModal) {
+        kingshot.closeTimeSlotModal();
+    }
+}
