@@ -48,6 +48,132 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 60px 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .admin-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .admin-toggle-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
+        }
+
+        .admin-section {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 193, 7, 0.95);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 20px;
+            min-width: 300px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 20;
+        }
+
+        .admin-section.show {
+            display: block;
+        }
+
+        .admin-section h3 {
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .admin-login {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .admin-login input {
+            padding: 10px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .admin-login input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .admin-login button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .admin-login button:hover {
+            transform: translateY(-2px);
+        }
+
+        .admin-controls {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .admin-controls.show {
+            display: flex;
+        }
+
+        .admin-btn {
+            padding: 10px 15px;
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .admin-btn.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .admin-status {
+            color: #4CAF50;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .admin-status.active {
+            display: block;
         }
 
         .hero-title {
@@ -216,6 +342,46 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .section-title .admin-add-btn {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            transition: all 0.3s ease;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            -webkit-text-fill-color: white;
+            background-clip: border-box;
+        }
+
+        .section-title .admin-add-btn.show {
+            display: inline-flex;
+        }
+
+        .section-title .admin-add-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .emoji-icon {
+            -webkit-text-fill-color: initial;
+            background: none;
+            color: initial;
         }
 
         .guides-grid {
@@ -232,11 +398,48 @@
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .guide-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .guide-admin-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: none;
+            gap: 5px;
+        }
+
+        .guide-admin-controls.show {
+            display: flex;
+        }
+
+        .guide-admin-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .guide-admin-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .guide-admin-btn.edit {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .guide-admin-btn.delete {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
         }
 
         .guide-title {
@@ -268,6 +471,7 @@
             font-size: 1rem;
             margin-bottom: 15px;
             transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .guide-image:hover {
@@ -279,6 +483,7 @@
             max-width: 100%;
             max-height: 100%;
             border-radius: 10px;
+            object-fit: cover;
         }
 
         .info-section {
@@ -304,6 +509,321 @@
             font-size: 0.9rem;
             margin-top: 60px;
             padding: 20px 0;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px 15px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .file-upload:hover .file-upload-label {
+            border-color: #2196F3;
+            background: #f0f8ff;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #666, #555);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 102, 102, 0.4);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .loading-spinner.show {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.95);
+        }
+
+        .notification.info {
+            background: rgba(33, 150, 243, 0.95);
+        }
+
+        .info-post {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .info-post:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-post-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: none;
+            gap: 5px;
+        }
+
+        .info-post-controls.show {
+            display: flex;
+        }
+
+        .info-post-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-post-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .info-post-btn.edit {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .info-post-btn.delete {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .info-post-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-post-content {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .info-post-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .default-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        .feature-highlight {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .feature-highlight strong {
+            color: white;
         }
 
         @media (max-width: 768px) {
@@ -352,20 +872,19 @@
             .section-title {
                 font-size: 2rem;
                 margin-bottom: 30px;
+                flex-direction: column;
             }
-        }
 
-        .feature-highlight {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid rgba(76, 175, 80, 0.4);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
+            .admin-section {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
 
-        .feature-highlight strong {
-            color: white;
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -373,6 +892,27 @@
     <div class="container">
         <!-- Hero Section -->
         <div class="hero-section">
+            <button class="admin-toggle-btn" onclick="toggleAdminSection()" title="Admin Login">👑</button>
+            
+            <div class="admin-section" id="adminSection">
+                <div class="admin-status" id="adminStatus">Admin Mode Active</div>
+                
+                <h3>🛡️ Admin Access</h3>
+                <div class="admin-login" id="adminLogin">
+                    <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
+                    <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
+                    <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
+                </div>
+                
+                <div class="admin-controls" id="adminControls">
+                    <button class="admin-btn" onclick="adminLogout()">🚪 Logout</button>
+                    <button class="admin-btn" onclick="manageContent()">📝 Manage Content</button>
+                    <button class="admin-btn danger" onclick="clearAllPosts()">🗑️ Clear All Posts</button>
+                </div>
+                
+                <div id="authError" style="color: #f44336; font-size: 0.8rem; margin-top: 10px; text-align: center;"></div>
+            </div>
+
             <h1 class="hero-title">
                 <img src="logo.png" class="hero-logo" alt="Logo">
                 Kingshot Vikings Event
@@ -451,10 +991,17 @@
 
         <!-- Guides Section -->
         <div class="guides-section">
-            <h2 class="section-title">Event Guides & Instructions</h2>
+            <h2 class="section-title">
+                <span class="emoji-icon">📚</span> Event Guides & Instructions
+                <button class="admin-add-btn" id="addGuideBtn" onclick="openPostModal()" title="Add New Guide">➕</button>
+            </h2>
             
-            <div class="guides-grid">
+            <div class="guides-grid" id="guidesContainer">
                 <div class="guide-card">
+                    <div class="guide-admin-controls" id="guideAdminControls">
+                        <button class="guide-admin-btn edit" onclick="editPost('default-1')" title="Edit">✏️</button>
+                        <button class="guide-admin-btn delete" onclick="deletePost('default-1')" title="Delete">🗑️</button>
+                    </div>
                     <h3 class="guide-title">🎯 How to Register</h3>
                     <div class="guide-content">
                         <p><strong>Step 1:</strong> Select your alliance portal above</p>
@@ -463,25 +1010,21 @@
                         <p><strong>Step 4:</strong> Click "Join Event" to be automatically grouped</p>
                     </div>
                 </div>
-
-                <div class="guide-card">
-                    <h3 class="guide-title">Test</h3>
-                    <div class="guide-image">
-                        <span>📸 Upload screenshot here</span>
-                        <!-- <img src="" alt=""> -->
-                    </div>
-                    <div class="guide-content">
-                        <p><strong>Test:</strong> Test</p>
-                    </div>
-                </div>                
             </div>
         </div>
 
         <!-- Info Section -->
         <div class="info-section">
-            <div class="info-content">
-                <h3 style="color: white; margin-bottom: 20px; font-size: 1.6rem;">🎮 Test</h3>
-                <p><strong>Test:</strong> Test</p>
+            <div class="section-title" style="margin-bottom: 30px;">
+                <span class="emoji-icon">🎮</span> Event Information
+                <button class="admin-add-btn" id="addInfoBtn" onclick="openPostModal('info')" title="Add Event Info">➕</button>
+            </div>
+            <div id="infoContainer">
+                <div class="info-content">
+                    <h3 style="color: white; margin-bottom: 20px; font-size: 1.6rem;">🎮 Event Information</h3>
+                    <p><strong>Event Status:</strong> Currently active - join your alliance now!</p>
+                    <p>Coordinate with your team, plan your strategies, and dominate the battlefield together.</p>
+                </div>
             </div>
         </div>
 
@@ -491,9 +1034,64 @@
         </div>
     </div>
 
-    <!-- Firebase SDK for real-time stats -->
+    <!-- Post Editor Modal -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Create New Post</h2>
+                <button class="close-btn" onclick="closePostModal()">×</button>
+            </div>
+            
+            <form id="postForm">
+                <div class="form-group">
+                    <label class="form-label">Post Type</label>
+                    <select class="form-input" id="postType" onchange="updatePostTypeFields()">
+                        <option value="guide">Guide Card</option>
+                        <option value="info">Info Section</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="titleGroup">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-input" id="postTitle" placeholder="Enter post title..." maxlength="100">
+                </div>
+                
+                <div class="form-group" id="iconGroup">
+                    <label class="form-label">Icon (Emoji)</label>
+                    <input type="text" class="form-input" id="postIcon" placeholder="🎯" maxlength="10">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Content</label>
+                    <textarea class="form-input form-textarea" id="postContent" placeholder="Enter your content here..." rows="6"></textarea>
+                </div>
+                
+                <div class="form-group" id="imageGroup">
+                    <label class="form-label">Image URL (optional)</label>
+                    <input type="url" class="form-input" id="postImageUrl" placeholder="https://example.com/image.jpg">
+                    <div class="image-preview" id="imagePreview"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="loading-spinner" id="saveSpinner"></span>
+                        <span id="saveButtonText">Save Post</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Firebase SDK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
 
     <script>
         // Firebase Configuration
@@ -507,26 +1105,440 @@
             appId: "1:308452962352:web:e18535f956c3386c033df5"
         };
 
-        // Initialize Firebase and load alliance stats
-        let database;
+        // Global variables
+        let database, auth;
+        let isAdmin = false;
+        let currentUser = null;
+        let posts = {};
+        let currentEditingPost = null;
 
+        // Initialize Firebase and load content
         function initializeFirebase() {
             try {
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
+                auth = firebase.auth();
                 
-                // Load stats for all alliances
+                console.log('Firebase initialized successfully');
+                
+                // Set up authentication state listener
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        currentUser = user;
+                        isAdmin = true;
+                        showAdminMode();
+                    } else {
+                        currentUser = null;
+                        isAdmin = false;
+                        hideAdminMode();
+                    }
+                });
+
+                // Load alliance stats
                 loadAllianceStats();
+                
+                // Load posts
+                loadPosts();
                 
             } catch (error) {
                 console.error('Firebase initialization error:', error);
-                // Show placeholder stats
-                updateStats('COB', 0, 0);
-                updateStats('LUX', 0, 0);
-                updateStats('GEW', 0, 0);
+                showNotification('Firebase connection failed', 'error');
             }
         }
 
+        // Admin authentication
+        async function adminLogin() {
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!email || !password) {
+                showAuthError('Please enter both email and password');
+                return;
+            }
+
+            try {
+                document.getElementById('adminLoginBtn').disabled = true;
+                clearAuthError();
+                
+                await auth.signInWithEmailAndPassword(email, password);
+                
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminSection').classList.remove('show');
+                
+                showNotification('Admin access granted!', 'success');
+                
+            } catch (error) {
+                console.error('Admin login error:', error);
+                let errorMessage = 'Login failed. Please check your credentials.';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'Admin account not found.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Incorrect password.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address.';
+                        break;
+                }
+                
+                showAuthError(errorMessage);
+                showNotification('Admin login failed', 'error');
+            } finally {
+                document.getElementById('adminLoginBtn').disabled = false;
+            }
+        }
+
+        async function adminLogout() {
+            try {
+                await auth.signOut();
+                showNotification('Admin logged out', 'info');
+                document.getElementById('adminSection').classList.remove('show');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Logout failed', 'error');
+            }
+        }
+
+        function toggleAdminSection() {
+            const section = document.getElementById('adminSection');
+            const isVisible = section.classList.contains('show');
+            
+            if (isVisible) {
+                section.classList.remove('show');
+                clearAuthError();
+            } else {
+                section.classList.add('show');
+                if (!isAdmin) {
+                    document.getElementById('adminEmail').focus();
+                }
+            }
+        }
+
+        function showAdminMode() {
+            document.getElementById('adminStatus').classList.add('active');
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('adminControls').classList.add('show');
+            document.getElementById('addGuideBtn').classList.add('show');
+            document.getElementById('addInfoBtn').classList.add('show');
+            
+            // Show admin controls on guide cards and info posts
+            const adminControls = document.querySelectorAll('.guide-admin-controls, .info-post-controls');
+            adminControls.forEach(control => control.classList.add('show'));
+        }
+
+        function hideAdminMode() {
+            document.getElementById('adminStatus').classList.remove('active');
+            document.getElementById('adminLogin').style.display = 'flex';
+            document.getElementById('adminControls').classList.remove('show');
+            document.getElementById('addGuideBtn').classList.remove('show');
+            document.getElementById('addInfoBtn').classList.remove('show');
+            
+            // Hide admin controls on guide cards and info posts
+            const adminControls = document.querySelectorAll('.guide-admin-controls, .info-post-controls');
+            adminControls.forEach(control => control.classList.remove('show'));
+        }
+
+        // Posts management
+        function loadPosts() {
+            const postsRef = database.ref('content/posts');
+            postsRef.on('value', (snapshot) => {
+                posts = snapshot.val() || {};
+                renderPosts();
+            });
+        }
+
+        function renderPosts() {
+            const guidesContainer = document.getElementById('guidesContainer');
+            const infoContainer = document.getElementById('infoContainer');
+            
+            // Keep default guide if no custom posts
+            const defaultGuide = `
+                <div class="guide-card">
+                    <div class="guide-admin-controls ${isAdmin ? 'show' : ''}">
+                        <button class="guide-admin-btn edit" onclick="editPost('default-1')" title="Edit">✏️</button>
+                        <button class="guide-admin-btn delete" onclick="deletePost('default-1')" title="Delete">🗑️</button>
+                    </div>
+                    <h3 class="guide-title">🎯 How to Register</h3>
+                    <div class="guide-content">
+                        <p><strong>Step 1:</strong> Select your alliance portal above</p>
+                        <p><strong>Step 2:</strong> Enter your player name exactly as it appears in-game</p>
+                        <p><strong>Step 3:</strong> Choose your march limit (1-6 or offline)</p>
+                        <p><strong>Step 4:</strong> Click "Join Event" to be automatically grouped</p>
+                    </div>
+                </div>
+            `;
+            
+            let guidesHTML = defaultGuide;
+            let infoHTML = '';
+            
+            // Separate guide posts and info posts
+            const guidePosts = [];
+            const infoPosts = [];
+            
+            Object.entries(posts).forEach(([id, post]) => {
+                if (post.type === 'guide') {
+                    guidePosts.push([id, post]);
+                } else if (post.type === 'info') {
+                    infoPosts.push([id, post]);
+                }
+            });
+            
+            // Add guide posts
+            guidePosts.forEach(([id, post]) => {
+                guidesHTML += `
+                    <div class="guide-card">
+                        <div class="guide-admin-controls ${isAdmin ? 'show' : ''}">
+                            <button class="guide-admin-btn edit" onclick="editPost('${id}')" title="Edit">✏️</button>
+                            <button class="guide-admin-btn delete" onclick="deletePost('${id}')" title="Delete">🗑️</button>
+                        </div>
+                        <h3 class="guide-title">${post.icon || '📋'} ${post.title}</h3>
+                        <div class="guide-content">
+                            ${post.content.replace(/\n/g, '<br>')}
+                        </div>
+                        ${post.imageUrl ? `
+                            <div class="guide-image">
+                                <img src="${post.imageUrl}" alt="${post.title}">
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            // Add info posts or show default
+            if (infoPosts.length > 0) {
+                infoPosts.forEach(([id, post]) => {
+                    infoHTML += `
+                        <div class="info-post">
+                            <div class="info-post-controls ${isAdmin ? 'show' : ''}">
+                                <button class="info-post-btn edit" onclick="editPost('${id}')" title="Edit">✏️</button>
+                                <button class="info-post-btn delete" onclick="deletePost('${id}')" title="Delete">🗑️</button>
+                            </div>
+                            <div class="info-post-title">${post.icon || '📢'} ${post.title}</div>
+                            <div class="info-post-content">
+                                ${post.content.replace(/\n/g, '<br>')}
+                            </div>
+                            ${post.imageUrl ? `
+                                <img src="${post.imageUrl}" alt="${post.title}" class="info-post-image">
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                // Show default info if no custom info posts
+                infoHTML = `
+                    <div class="default-info">
+                        <p><strong>Event Status:</strong> Currently active - join your alliance now!</p>
+                        <p>Coordinate with your team, plan your strategies, and dominate the battlefield together.</p>
+                    </div>
+                `;
+            }
+            
+            guidesContainer.innerHTML = guidesHTML;
+            infoContainer.innerHTML = infoHTML;
+        }
+
+        // Post modal management
+        function openPostModal(postId = null, defaultType = 'guide') {
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
+                return;
+            }
+            
+            // If postId is a type string (like 'info'), treat it as default type
+            if (postId === 'info' || postId === 'guide') {
+                defaultType = postId;
+                postId = null;
+            }
+            
+            currentEditingPost = postId;
+            const modal = document.getElementById('postModal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('postForm');
+            
+            // Reset form
+            form.reset();
+            document.getElementById('imagePreview').innerHTML = '';
+            
+            if (postId && posts[postId]) {
+                // Edit mode
+                title.textContent = 'Edit Post';
+                const post = posts[postId];
+                document.getElementById('postType').value = post.type;
+                document.getElementById('postTitle').value = post.title;
+                document.getElementById('postIcon').value = post.icon || '';
+                document.getElementById('postContent').value = post.content;
+                document.getElementById('postImageUrl').value = post.imageUrl || '';
+                
+                if (post.imageUrl) {
+                    document.getElementById('imagePreview').innerHTML = `
+                        <img src="${post.imageUrl}" alt="Current image">
+                    `;
+                }
+            } else {
+                // Create mode
+                title.textContent = 'Create New Post';
+                document.getElementById('postType').value = defaultType;
+            }
+            
+            updatePostTypeFields();
+            modal.classList.add('show');
+        }
+
+        function closePostModal() {
+            document.getElementById('postModal').classList.remove('show');
+            currentEditingPost = null;
+        }
+
+        function updatePostTypeFields() {
+            const type = document.getElementById('postType').value;
+            const titleGroup = document.getElementById('titleGroup');
+            const iconGroup = document.getElementById('iconGroup');
+            const imageGroup = document.getElementById('imageGroup');
+            
+            if (type === 'info') {
+                titleGroup.style.display = 'block';
+                iconGroup.style.display = 'block';
+                imageGroup.style.display = 'none';
+            } else {
+                titleGroup.style.display = 'block';
+                iconGroup.style.display = 'block';
+                imageGroup.style.display = 'block';
+            }
+        }
+
+        function previewImage() {
+            const url = document.getElementById('postImageUrl').value.trim();
+            const preview = document.getElementById('imagePreview');
+            
+            if (url) {
+                preview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.style.display='none'">`;
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
+                return;
+            }
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const spinner = document.getElementById('saveSpinner');
+            const buttonText = document.getElementById('saveButtonText');
+            
+            try {
+                submitBtn.disabled = true;
+                spinner.classList.add('show');
+                buttonText.textContent = 'Saving...';
+                
+                const postData = {
+                    type: document.getElementById('postType').value,
+                    title: document.getElementById('postTitle').value.trim(),
+                    icon: document.getElementById('postIcon').value.trim(),
+                    content: document.getElementById('postContent').value.trim(),
+                    timestamp: Date.now(),
+                    author: currentUser.email
+                };
+                
+                // Add image URL if provided
+                const imageUrl = document.getElementById('postImageUrl').value.trim();
+                if (imageUrl) {
+                    postData.imageUrl = imageUrl;
+                }
+                
+                if (!postData.title || !postData.content) {
+                    throw new Error('Title and content are required');
+                }
+                
+                // Save to database
+                const postId = currentEditingPost || `post_${Date.now()}`;
+                await database.ref(`content/posts/${postId}`).set(postData);
+                
+                closePostModal();
+                showNotification(`Post ${currentEditingPost ? 'updated' : 'created'} successfully!`, 'success');
+                
+            } catch (error) {
+                console.error('Error saving post:', error);
+                showNotification(error.message || 'Failed to save post', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                spinner.classList.remove('show');
+                buttonText.textContent = 'Save Post';
+            }
+        });
+
+        async function editPost(postId) {
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
+                return;
+            }
+            
+            if (postId === 'default-1') {
+                // Edit default post - create a new post with default content
+                openPostModal();
+                document.getElementById('postTitle').value = 'How to Register';
+                document.getElementById('postIcon').value = '🎯';
+                document.getElementById('postContent').value = 'Step 1: Select your alliance portal above\nStep 2: Enter your player name exactly as it appears in-game\nStep 3: Choose your march limit (1-6 or offline)\nStep 4: Click "Join Event" to be automatically grouped';
+            } else {
+                openPostModal(postId);
+            }
+        }
+
+        async function deletePost(postId) {
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
+                return;
+            }
+            
+            if (postId === 'default-1') {
+                showNotification('Cannot delete default guide', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this post?')) {
+                return;
+            }
+            
+            try {
+                await database.ref(`content/posts/${postId}`).remove();
+                showNotification('Post deleted successfully', 'success');
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                showNotification('Failed to delete post', 'error');
+            }
+        }
+
+        async function clearAllPosts() {
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete ALL posts? This cannot be undone!')) {
+                return;
+            }
+            
+            try {
+                await database.ref('content/posts').remove();
+                showNotification('All posts deleted', 'info');
+            } catch (error) {
+                console.error('Error clearing posts:', error);
+                showNotification('Failed to clear posts', 'error');
+            }
+        }
+
+        function manageContent() {
+            showNotification('Content management - use the + button to add new guides!', 'info');
+        }
+
+        // Alliance stats loading
         function loadAllianceStats() {
             const alliances = ['COB', 'LUX', 'GEW'];
             
@@ -571,8 +1583,56 @@
             if (groupsEl) groupsEl.textContent = groupCount;
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initializeFirebase);
+        // Utility functions
+        function showAuthError(message) {
+            document.getElementById('authError').textContent = message;
+        }
+
+        function clearAuthError() {
+            document.getElementById('authError').textContent = '';
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFirebase();
+            
+            // Admin password enter key
+            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    adminLogin();
+                }
+            });
+            
+            // Image URL preview
+            document.getElementById('postImageUrl').addEventListener('input', previewImage);
+            
+            // Close modal on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closePostModal();
+                }
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('postModal').addEventListener('click', (e) => {
+                if (e.target.id === 'postModal') {
+                    closePostModal();
+                }
+            });
+        });
     </script>
 </body>
 </html>
