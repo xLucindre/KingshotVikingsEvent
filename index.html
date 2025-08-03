@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kingshot Vikings Event - Multi Alliance</title>
+    <title>Kingshot Vikings Event - Alliance Portal</title>
     <style>
         * {
             margin: 0;
@@ -31,178 +31,29 @@
             z-index: 1;
         }
 
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 280px;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(-240px);
-        }
-
-        .sidebar-toggle {
-            position: fixed;
-            left: 240px;
-            top: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 0 10px 10px 0;
-            padding: 10px 15px;
-            cursor: pointer;
-            z-index: 101;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .sidebar.collapsed + .sidebar-toggle {
-            left: 0;
-            border-radius: 0 10px 10px 0;
-        }
-
-        .sidebar-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            text-align: center;
-        }
-
-        .sidebar-title {
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-        }
-
-        .alliance-list {
-            flex: 1;
-            padding: 20px 0;
-        }
-
-        .alliance-item {
-            margin: 0 20px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .alliance-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            border-radius: 15px 15px 0 0;
-            transition: all 0.3s ease;
-        }
-
-        .alliance-item.cob::before {
-            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
-        }
-
-        .alliance-item.lux::before {
-            background: linear-gradient(90deg, #4ECDC4, #44A08D);
-        }
-
-        .alliance-item.gew::before {
-            background: linear-gradient(90deg, #A8E6CF, #7FCDCD);
-        }
-
-        .alliance-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
-        }
-
-        .alliance-item.active {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .alliance-item.active::before {
-            height: 100%;
-            opacity: 0.1;
-        }
-
-        .alliance-name {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .alliance-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-        }
-
-        .alliance-stat {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.8rem;
-        }
-
-        .alliance-stat-number {
-            color: white;
-            font-weight: bold;
-        }
-
-        .main-content {
-            margin-left: 280px;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
             position: relative;
             z-index: 2;
-            transition: margin-left 0.3s ease;
         }
 
-        .main-content.expanded {
-            margin-left: 40px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
+        .hero-section {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 60px;
             backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 30px;
+            padding: 60px 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
 
-        .header h1 {
+        .hero-title {
             color: white;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
             background: linear-gradient(45deg, #fff, #e0e0e0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -210,120 +61,120 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-        }
-
-        .header-logo {
-            height: 50px;
-            width: auto;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-            transition: all 0.3s ease;
-        }
-
-        .header-logo:hover {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .current-alliance {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 10px 20px;
-            border-radius: 15px;
-            margin-top: 15px;
-            display: inline-block;
-        }
-
-        .current-alliance-name {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        .admin-status {
-            color: #4CAF50;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .admin-status.active {
-            display: flex;
-        }
-
-        .admin-status::before {
-            content: '👑';
-        }
-
-        .admin-user {
-            background: rgba(76, 175, 80, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-        }
-
-        .connection-status.connected {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4CAF50;
-        }
-
-        .connection-status.disconnected {
-            background: rgba(244, 67, 54, 0.2);
-            color: #f44336;
-        }
-
-        .connection-status.connecting {
-            background: rgba(255, 152, 0, 0.2);
-            color: #FF9800;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
+            gap: 20px;
             flex-wrap: wrap;
         }
 
-        .stat-item {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 15px 25px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .hero-logo {
+            height: 80px;
+            width: auto;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .hero-logo:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .alliance-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        .alliance-card {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 40px 30px;
+            text-decoration: none;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .alliance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            border-radius: 25px 25px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .alliance-card.cob::before {
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+        }
+
+        .alliance-card.lux::before {
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+        }
+
+        .alliance-card.gew::before {
+            background: linear-gradient(90deg, #A8E6CF, #7FCDCD);
+        }
+
+        .alliance-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .alliance-card:hover::before {
+            height: 100%;
+            opacity: 0.1;
+        }
+
+        .alliance-name {
+            color: white;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
             text-align: center;
-            min-width: 120px;
+        }
+
+        .alliance-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .alliance-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            text-align: center;
         }
 
         .stat-number {
-            font-size: 2rem;
+            color: white;
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #fff;
             display: block;
         }
 
@@ -333,810 +184,316 @@
             margin-top: 5px;
         }
 
-        .admin-section {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 193, 7, 0.1);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            display: none;
-        }
-
-        .admin-section.show {
-            display: block;
-        }
-
-        .admin-section h3 {
-            color: rgba(255, 255, 255, 0.9);
-            text-align: center;
-            margin-bottom: 20px;
+        .enter-btn {
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
             font-size: 1.1rem;
-        }
-
-        .admin-login {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .admin-form-row {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .admin-login input {
-            padding: 12px 18px;
-            border: 2px solid rgba(255, 193, 7, 0.5);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 0.9rem;
-            min-width: 200px;
-            transition: all 0.3s ease;
-        }
-
-        .admin-login input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .admin-login input:focus {
-            outline: none;
-            border-color: rgba(255, 193, 7, 0.8);
-            transform: translateY(-2px);
-        }
-
-        .admin-login button {
-            padding: 12px 25px;
-            background: linear-gradient(45deg, #FF9800, #F57C00);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
             font-weight: bold;
+            width: 100%;
+            cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 120px;
         }
 
-        .admin-login button:hover {
+        .enter-btn:hover {
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(255, 152, 0, 0.4);
         }
 
-        .admin-login button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .guides-section {
+            margin-bottom: 60px;
         }
 
-        .input-section {
+        .section-title {
+            color: white;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 50px;
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .guides-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .guide-card {
             backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .search-section {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .search-section h3 {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-
-        .search-form {
-            position: relative;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .search-input {
-            padding: 15px 50px 15px 20px;
-            border: 2px solid rgba(33, 150, 243, 0.3);
-            border-radius: 15px;
-            background: rgba(33, 150, 243, 0.1);
-            color: white;
-            font-size: 1rem;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: rgba(33, 150, 243, 0.6);
-            background: rgba(33, 150, 243, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .clear-search-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(244, 67, 54, 0.8);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .clear-search-btn:hover {
-            background: rgba(244, 67, 54, 1);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .input-form {
-            display: flex;
-            gap: 15px;
-            align-items: end;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .input-group {
-            position: relative;
-            flex: 1;
-            max-width: 300px;
-        }
-
-        .input-label {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-            display: block;
-            font-weight: 500;
-        }
-
-        .player-input {
-            padding: 15px 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1rem;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .player-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .player-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
-        }
-
-        .player-input:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .march-select {
-            padding: 15px 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1rem;
-            width: 100%;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .march-select:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
-        }
-
-        .march-select:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .march-select option {
-            background: #333;
-            color: white;
-        }
-
-        .add-btn {
-            padding: 15px 30px;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
-            white-space: nowrap;
-            height: fit-content;
-        }
-
-        .add-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
-        }
-
-        .add-btn:active:not(:disabled) {
-            transform: translateY(-1px);
-        }
-
-        .add-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .groups-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .group {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 25px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
-        .group::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #4CAF50, #2196F3, #FF9800, #E91E63, #9C27B0);
-            border-radius: 20px 20px 0 0;
-        }
-
-        .group.offline-group {
-            border: 2px solid rgba(108, 117, 125, 0.5);
-            background: rgba(108, 117, 125, 0.05);
-        }
-
-        .group.offline-group::before {
-            background: linear-gradient(90deg, #6c757d, #495057);
-        }
-
-        .march-badge.offline-badge {
-            background: linear-gradient(45deg, #6c757d, #495057);
-            color: white;
-        }
-
-        .group.waiting {
-            border: 2px dashed rgba(255, 152, 0, 0.5);
-            background: rgba(255, 152, 0, 0.05);
-        }
-
-        .group.waiting::before {
-            background: linear-gradient(90deg, #FF9800, #FFC107);
-        }
-
-        .group:hover {
+        .guide-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
         }
 
-        .group-header {
+        .guide-title {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .guide-content {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
             margin-bottom: 20px;
+        }
+
+        .guide-image {
+            width: 100%;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .guide-image:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .guide-image img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+        }
+
+        .info-section {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .info-content {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.7;
             text-align: center;
         }
 
-        .group-title {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .group-count {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-        }
-
-        .march-badge {
-            background: linear-gradient(45deg, #FF9800, #F57C00);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 8px;
-            display: inline-block;
-            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
-        }
-
-        .player-list {
-            list-style: none;
-        }
-
-        .player-item {
-            background: rgba(255, 255, 255, 0.15);
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .player-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(5px);
-        }
-
-        .player-item.highlight {
-            background: rgba(76, 175, 80, 0.3);
-            border-color: rgba(76, 175, 80, 0.5);
-            animation: highlight 2s ease-out;
-        }
-
-        .player-item.search-match {
-            background: rgba(33, 150, 243, 0.3);
-            border-color: rgba(33, 150, 243, 0.6);
-            box-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
-        }
-
-        .group.has-search-match {
-            border-color: rgba(33, 150, 243, 0.6);
-            background: rgba(33, 150, 243, 0.05);
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(33, 150, 243, 0.2);
-        }
-
-        .group.has-search-match::before {
-            background: linear-gradient(90deg, #2196F3, #1976D2);
-        }
-
-        @keyframes highlight {
-            0% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .player-info {
-            flex: 1;
-        }
-
-        .player-name {
-            color: white;
-            font-weight: 500;
-            display: block;
-        }
-
-        .player-march {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.8rem;
-            margin-top: 2px;
-        }
-
-        .remove-btn {
-            background: linear-gradient(45deg, #f44336, #d32f2f);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-            opacity: 0.8;
-        }
-
-        .remove-btn:hover:not(:disabled) {
-            opacity: 1;
-            transform: scale(1.1);
-        }
-
-        .remove-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .remove-btn.own-player {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            opacity: 1;
-        }
-
-        .remove-btn.admin {
-            background: linear-gradient(45deg, #FF9800, #F57C00);
-        }
-
-        .empty-state {
+        .footer {
             text-align: center;
             color: rgba(255, 255, 255, 0.6);
-            font-style: italic;
-            padding: 40px 20px;
-        }
-
-        .loading-state {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 40px 20px;
-        }
-
-        .loading-spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .floating-actions {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 1000;
-        }
-
-        .floating-action {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            cursor: pointer;
-            font-size: 1.5rem;
-            box-shadow: 0 10px 20px rgba(33, 150, 243, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .floating-action:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(33, 150, 243, 0.6);
-        }
-
-        .floating-action:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .floating-action.clear {
-            background: linear-gradient(45deg, #f44336, #d32f2f);
-            box-shadow: 0 10px 20px rgba(244, 67, 54, 0.4);
-        }
-
-        .floating-action.clear:hover:not(:disabled) {
-            box-shadow: 0 15px 30px rgba(244, 67, 54, 0.6);
-        }
-
-        .floating-action.admin-toggle {
-            background: linear-gradient(45deg, #FF9800, #F57C00);
-            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
-        }
-
-        .floating-action.admin-toggle:hover:not(:disabled) {
-            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
+            font-size: 0.9rem;
+            margin-top: 60px;
+            padding: 20px 0;
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                transform: translateX(-100%);
+            .container {
+                padding: 15px;
             }
 
-            .sidebar.collapsed {
-                transform: translateX(-100%);
+            .hero-section {
+                padding: 40px 20px;
+                margin-bottom: 40px;
             }
 
-            .sidebar:not(.collapsed) {
-                transform: translateX(0);
-            }
-
-            .sidebar-toggle {
-                left: 20px;
-                border-radius: 10px;
-            }
-
-            .sidebar.collapsed + .sidebar-toggle {
-                left: 20px;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 80px 20px 20px;
-            }
-
-            .main-content.expanded {
-                margin-left: 0;
-            }
-
-            .header h1 {
-                font-size: 2rem;
+            .hero-title {
+                font-size: 2.5rem;
                 flex-direction: column;
-                gap: 10px;
-            }
-
-            .header-logo {
-                height: 40px;
-            }
-
-            .search-section h3 {
-                font-size: 1rem;
-            }
-
-            .search-form {
-                max-width: 100%;
-            }
-            
-            .input-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .input-group {
-                max-width: none;
-            }
-            
-            .stats {
                 gap: 15px;
             }
-            
-            .groups-container {
+
+            .hero-logo {
+                height: 60px;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .alliance-selector {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-bottom: 50px;
+            }
+
+            .alliance-card {
+                padding: 30px 20px;
+            }
+
+            .alliance-name {
+                font-size: 1.8rem;
+            }
+
+            .guides-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
 
-            .floating-actions {
-                bottom: 20px;
-                right: 20px;
-            }
-
-            .floating-action {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-            }
-
-            .admin-form-row {
-                flex-direction: column;
-            }
-
-            .admin-login input {
-                min-width: 100%;
+            .section-title {
+                font-size: 2rem;
+                margin-bottom: 30px;
             }
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(76, 175, 80, 0.9);
-            color: white;
-            padding: 15px 20px;
+        .feature-highlight {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
             border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transform: translateX(400px);
-            transition: all 0.3s ease;
-            z-index: 1001;
-            max-width: 300px;
+            padding: 15px;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        @keyframes groupPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
-        .group.updated {
-            animation: groupPulse 0.6s ease-in-out;
-        }
-
-        .online-count {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8rem;
-            margin-top: 5px;
-        }
-
-        .auth-error {
-            color: #f44336;
-            font-size: 0.8rem;
-            margin-top: 5px;
-            text-align: center;
+        .feature-highlight strong {
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">🏰 Alliances</div>
-            <div class="sidebar-subtitle">Select your alliance</div>
-        </div>
-        <div class="alliance-list">
-            <div class="alliance-item cob active" onclick="switchAlliance('COB')">
-                <div class="alliance-name">COB</div>
-                <div class="alliance-stats">
-                    <div class="alliance-stat">
-                        <span class="alliance-stat-number" id="cobPlayerCount">0</span> players
-                    </div>
-                    <div class="alliance-stat">
-                        <span class="alliance-stat-number" id="cobGroupCount">0</span> groups
-                    </div>
-                </div>
-            </div>
-            <div class="alliance-item lux" onclick="switchAlliance('LUX')">
-                <div class="alliance-name">LUX</div>
-                <div class="alliance-stats">
-                    <div class="alliance-stat">
-                        <span class="alliance-stat-number" id="luxPlayerCount">0</span> players
-                    </div>
-                    <div class="alliance-stat">
-                        <span class="alliance-stat-number" id="luxGroupCount">0</span> groups
-                    </div>
-                </div>
-            </div>
-            <div class="alliance-item gew" onclick="switchAlliance('GEW')">
-                <div class="alliance-name">GEW</div>
-                <div class="alliance-stats">
-                    <div class="alliance-stat">
-                        <span class="alliance-stat-number" id="gewPlayerCount">0</span> players
-                    </div>
-                    <div class="alliance-stat">
-                        <span class="alliance-stat-number" id="gewGroupCount">0</span> groups
-                    </div>
-                </div>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">
+                <img src="logo.png" class="hero-logo" alt="Logo">
+                Kingshot Vikings Event
+            </h1>
+            <p class="hero-subtitle">⚔️ Multi-Alliance Event Organization Platform ⚔️</p>
+            <p class="hero-description">
+                Welcome to the COB family coordination hub for the Vikings Event! 
+                Choose your alliance below to access real-time group formation and 
+                march coordination.
+            </p>
+            
+            <div class="feature-highlight">
+                <strong>🔥 New Features:</strong> Real-time synchronization, Admin drag & drop, Search functionality, Mobile optimized
             </div>
         </div>
-    </div>
 
-    <div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
-
-    <div class="main-content" id="mainContent">
-        <div class="container">
-            <div class="header">
-                <h1><img src="logo.png" class="header-logo"> Kingshot Vikings Event</h1>
-                <div class="current-alliance">
-                    <div class="current-alliance-name" id="currentAllianceName">COB Alliance</div>
+        <!-- Alliance Selector -->
+        <div class="alliance-selector">
+            <a href="/COB/" class="alliance-card cob">
+                <div class="alliance-name">COB Alliance</div>
+                <div class="alliance-description">
+                    Enter the COB battle coordination system.<br>
+                    Dominate the battlefield!
                 </div>
-                <div class="admin-status" id="adminStatus">
-                    Admin Mode Active
-                    <span class="admin-user" id="adminUser"></span>
-                </div>
-                
-                <div id="connectionStatus" class="connection-status connecting">
-                    <div class="status-dot"></div>
-                    <span>Connecting to Firebase...</span>
-                </div>
-
-                <div class="stats">
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalPlayers">0</span>
-                        <div class="stat-label">Players</div>
+                <div class="alliance-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="cobPlayers">-</span>
+                        <div class="stat-label">Active Players</div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalGroups">0</span>
-                        <div class="stat-label">March Groups</div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="cobGroups">-</span>
+                        <div class="stat-label">Battle Groups</div>
                     </div>
                 </div>
-                
-                <div class="online-count" id="onlineCount">
-                    👥 Loading online players...
+                <button class="enter-btn">Enter COB Portal</button>
+            </a>
+
+            <a href="/LUX/" class="alliance-card lux">
+                <div class="alliance-name">LUX Alliance</div>
+                <div class="alliance-description">
+                    Access the LUX command center.<br>
+                    Organize your marches and join the fight!
                 </div>
+                <div class="alliance-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="luxPlayers">-</span>
+                        <div class="stat-label">Active Players</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="luxGroups">-</span>
+                        <div class="stat-label">Battle Groups</div>
+                    </div>
+                </div>
+                <button class="enter-btn">Enter LUX Portal</button>
+            </a>
+
+            <a href="/GEW/" class="alliance-card gew">
+                <div class="alliance-name">GEW Alliance</div>
+                <div class="alliance-description">
+                    Join the GEW tactical operations.<br>
+                    Plan your moves and secure victory!
+                </div>
+                <div class="alliance-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="gewPlayers">-</span>
+                        <div class="stat-label">Active Players</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="gewGroups">-</span>
+                        <div class="stat-label">Battle Groups</div>
+                    </div>
+                </div>
+                <button class="enter-btn">Enter GEW Portal</button>
+            </a>
+        </div>
+
+        <!-- Guides Section -->
+        <div class="guides-section">
+            <h2 class="section-title">Event Guides & Instructions</h2>
+            
+            <div class="guides-grid">
+                <div class="guide-card">
+                    <h3 class="guide-title">🎯 How to Register</h3>
+                    <div class="guide-content">
+                        <p><strong>Step 1:</strong> Select your alliance portal above</p>
+                        <p><strong>Step 2:</strong> Enter your player name exactly as it appears in-game</p>
+                        <p><strong>Step 3:</strong> Choose your march limit (1-6 or offline)</p>
+                        <p><strong>Step 4:</strong> Click "Join Event" to be automatically grouped</p>
+                    </div>
+                </div>
+
+                <div class="guide-card">
+                    <h3 class="guide-title">Test</h3>
+                    <div class="guide-image">
+                        <span>📸 Upload screenshot here</span>
+                        <!-- <img src="" alt=""> -->
+                    </div>
+                    <div class="guide-content">
+                        <p><strong>Test:</strong> Test</p>
+                    </div>
+                </div>                
             </div>
+        </div>
 
-            <div class="admin-section" id="adminSection">
-                <h3>🛡️ Admin Access</h3>
-                <div class="admin-login">
-                    <div class="admin-form-row">
-                        <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
-                        <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
-                    </div>
-                    <div class="admin-form-row">
-                        <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
-                        <button onclick="adminLogout()" id="adminLogoutBtn" style="display: none;">🚪 Logout</button>
-                    </div>
-                    <div class="auth-error" id="authError"></div>
-                </div>
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-content">
+                <h3 style="color: white; margin-bottom: 20px; font-size: 1.6rem;">🎮 Test</h3>
+                <p><strong>Test:</strong> Test</p>
             </div>
+        </div>
 
-            <div class="input-section">
-                <div class="search-section">
-                    <h3>🔍 Find Your Group</h3>
-                    <div class="search-form">
-                        <input type="text" id="searchInput" class="search-input" placeholder="Search for your name..." maxlength="50">
-                        <button onclick="clearSearch()" class="clear-search-btn" id="clearSearchBtn" style="display: none;">✕</button>
-                    </div>
-                </div>
-                
-                <hr style="border: 1px solid rgba(255,255,255,0.2); margin: 20px 0;">
-                
-                <div class="input-form">
-                    <div class="input-group">
-                        <label class="input-label">Player Name</label>
-                        <input type="text" id="playerInput" class="player-input" placeholder="Enter your name..." maxlength="50" disabled>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">March limit</label>
-                        <select id="marchSelect" class="march-select" disabled>
-                            <option value="1">1 march</option>
-                            <option value="2">2 marches</option>
-                            <option value="3" selected>3 marches</option>
-                            <option value="4">4 marches</option>
-                            <option value="5">5 marches</option>
-                            <option value="6">6 marches</option>
-                            <option value="offline">Offline Player</option>
-                        </select>
-                    </div>
-                    <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>⚔️ Join Event</button>
-                </div>
-            </div>
-
-            <div id="groupsContainer" class="groups-container">
-                <div class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <h3>Loading Event Data...</h3>
-                    <p>Connecting to Firebase Realtime Database</p>
-                </div>
-            </div>
+        <div class="footer">
+            <p>© 2025 Kingshot Event Platform | Developed by Lucindre</p>
+            <p>Powered by Firebase & Netlify | Optimized for all devices</p>
         </div>
     </div>
 
-    <div class="floating-actions">
-        <button onclick="toggleAdminSection()" class="floating-action admin-toggle" id="adminToggleBtn" title="Admin Login">👑</button>
-        <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All Players (Admin Only)" disabled style="display: none;">🗑️</button>
-    </div>
-
-    <div id="notification" class="notification">
-        <span id="notificationText"></span>
-    </div>
-
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK for real-time stats -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
 
     <script>
         // Firebase Configuration
@@ -1150,794 +507,72 @@
             appId: "1:308452962352:web:e18535f956c3386c033df5"
         };
 
-        // Global variables
+        // Initialize Firebase and load alliance stats
         let database;
-        let auth;
-        let isConnected = false;
-        let playersRef;
-        let connectionRef;
-        let localPlayers = {};
-        let groups = [];
-        let isAdmin = false;
-        let currentPlayerName = '';
-        let currentAdminUser = null;
-        let currentSearchTerm = '';
-        let currentAlliance = 'COB';
-        let allianceListeners = {}; // To store Firebase listeners for each alliance
-        let allAlliancesData = {}; // Store data for all alliances
-
-        // Available alliances
-        const ALLIANCES = ['COB', 'LUX', 'GEW'];
-
-        // Sidebar functionality
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-        }
-
-        function switchAlliance(allianceName) {
-            if (currentAlliance === allianceName) return;
-            
-            // Update UI
-            document.querySelectorAll('.alliance-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            document.querySelector(`.alliance-item.${allianceName.toLowerCase()}`).classList.add('active');
-            document.getElementById('currentAllianceName').textContent = `${allianceName} Alliance`;
-            
-            // Clear current search
-            clearSearch();
-            
-            // Switch alliance
-            currentAlliance = allianceName;
-            localPlayers = allAlliancesData[allianceName] || {};
-            
-            // WICHTIG: playersRef auf neue Allianz setzen
-            if (isConnected && database) {
-                playersRef = database.ref(`event/alliances/${allianceName}/players`);
-                console.log(`Switched playersRef to ${allianceName}`);
-            }
-            
-            reorganizeGroups();
-            showNotification(`Switched to ${allianceName} Alliance`, 'info');
-        }
-
-        function setupAllianceListener(allianceName) {
-            // Remove existing listener for current alliance if it exists
-            if (allianceListeners[allianceName]) {
-                // Clean up existing listener
-                const oldRef = database.ref(`event/alliances/${allianceName}/players`);
-                oldRef.off();
-            }
-            
-            // Set up new reference and listener
-            const allianceRef = database.ref(`event/alliances/${allianceName}/players`);
-            
-            // WICHTIG: Wenn dies die aktuelle Allianz ist, setze auch playersRef
-            if (allianceName === currentAlliance) {
-                playersRef = allianceRef;
-                console.log(`Active playersRef set to ${allianceName}`);
-            }
-            
-            const listener = allianceRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                allAlliancesData[allianceName] = data || {};
-                
-                if (currentAlliance === allianceName) {
-                    localPlayers = allAlliancesData[allianceName];
-                    reorganizeGroups();
-                    updateOnlineCount();
-                }
-                
-                updateAllianceStats();
-            });
-            
-            allianceListeners[allianceName] = listener;
-        }
-
-        function updateAllianceStats() {
-            ALLIANCES.forEach(alliance => {
-                const allianceData = allAlliancesData[alliance] || {};
-                const playerCount = Object.keys(allianceData).length;
-                
-                // Calculate groups for this alliance
-                const allianceGroups = calculateGroupsForAlliance(allianceData);
-                const groupCount = allianceGroups.length;
-                
-                // Update sidebar stats
-                const playerCountEl = document.getElementById(`${alliance.toLowerCase()}PlayerCount`);
-                const groupCountEl = document.getElementById(`${alliance.toLowerCase()}GroupCount`);
-                
-                if (playerCountEl) playerCountEl.textContent = playerCount;
-                if (groupCountEl) groupCountEl.textContent = groupCount;
-            });
-        }
-
-        function calculateGroupsForAlliance(allianceData) {
-            const allianceGroups = [];
-            
-            // Create an array of all players with their info and find earliest timestamp for each march limit
-            const allPlayers = [];
-            const earliestTimestampByMarch = {};
-            
-            Object.entries(allianceData).forEach(([playerName, playerData]) => {
-                const marchLimit = playerData.marchLimit || 3;
-                const timestamp = playerData.timestamp || 0;
-                
-                allPlayers.push({
-                    name: playerName,
-                    marchLimit: marchLimit,
-                    timestamp: timestamp
-                });
-                
-                // Track earliest timestamp for each march limit to determine group order
-                if (!earliestTimestampByMarch[marchLimit] || timestamp < earliestTimestampByMarch[marchLimit]) {
-                    earliestTimestampByMarch[marchLimit] = timestamp;
-                }
-            });
-            
-            // Sort players by timestamp (first come, first served)
-            allPlayers.sort((a, b) => a.timestamp - b.timestamp);
-            
-            // Group players by march limit but maintain timestamp order within groups
-            const playersByMarchLimit = {};
-            allPlayers.forEach(player => {
-                const marchLimit = player.marchLimit;
-                if (!playersByMarchLimit[marchLimit]) {
-                    playersByMarchLimit[marchLimit] = [];
-                }
-                playersByMarchLimit[marchLimit].push(player);
-            });
-            
-            // Create groups ordered by earliest player timestamp in each march category
-            const marchLimitsByFirstPlayer = Object.keys(playersByMarchLimit).sort((a, b) => {
-                return earliestTimestampByMarch[a] - earliestTimestampByMarch[b];
-            });
-            
-            marchLimitsByFirstPlayer.forEach(marchLimit => {
-                const players = playersByMarchLimit[marchLimit];
-                let groupSize;
-                
-                // Determine group size based on march type
-                if (marchLimit === 'offline') {
-                    groupSize = 4; // Offline players in 4-player groups
-                } else {
-                    groupSize = parseInt(marchLimit); // Group size matches march limit
-                }
-                
-                // Split players into groups in order
-                for (let i = 0; i < players.length; i += groupSize) {
-                    const group = players.slice(i, i + groupSize);
-                    allianceGroups.push({
-                        players: group,
-                        marchLimit: marchLimit,
-                        groupNumber: allianceGroups.length + 1,
-                        maxSize: groupSize,
-                        isFull: group.length === groupSize,
-                        isOffline: marchLimit === 'offline'
-                    });
-                }
-            });
-            
-            return allianceGroups;
-        }
-
-        // Search functionality
-        function searchPlayer() {
-            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-            currentSearchTerm = searchTerm;
-            
-            const clearBtn = document.getElementById('clearSearchBtn');
-            
-            if (searchTerm === '') {
-                clearBtn.style.display = 'none';
-            } else {
-                clearBtn.style.display = 'block';
-            }
-            
-            updateDisplay();
-            
-            // Scroll to first matching group after a short delay to ensure DOM is updated
-            if (searchTerm) {
-                setTimeout(() => {
-                    const matchingGroup = document.querySelector('.group.has-search-match');
-                    if (matchingGroup) {
-                        matchingGroup.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center' 
-                        });
-                    }
-                }, 100);
-            }
-        }
-
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            currentSearchTerm = '';
-            document.getElementById('clearSearchBtn').style.display = 'none';
-            updateDisplay();
-        }
 
         function initializeFirebase() {
             try {
-                console.log('Initializing Firebase...');
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
-                auth = firebase.auth();
                 
-                console.log('Firebase initialized successfully');
+                // Load stats for all alliances
+                loadAllianceStats();
                 
-                // Set up authentication state listener
-                auth.onAuthStateChanged((user) => {
-                    if (user) {
-                        currentAdminUser = user;
-                        isAdmin = true;
-                        showAdminMode();
-                    } else {
-                        currentAdminUser = null;
-                        isAdmin = false;
-                        hideAdminMode();
-                    }
-                    reorganizeGroups(); // Refresh display
-                });
-
-                // Set up connection monitoring
-                connectionRef = database.ref('.info/connected');
-                connectionRef.on('value', (snapshot) => {
-                    isConnected = snapshot.val() === true;
-                    updateConnectionStatus();
-                    
-                    if (isConnected) {
-                        // Set up listeners for all alliances
-                        ALLIANCES.forEach(alliance => {
-                            setupAllianceListener(alliance);
-                        });
-                        
-                        // WICHTIG: Explizit COB als aktive Allianz setzen
-                        setupAllianceListener(currentAlliance);
-                        localPlayers = allAlliancesData[currentAlliance] || {};
-                        reorganizeGroups();
-                    }
-                });
-
-                // Enable inputs when connected
-                enableInterface();
-                
-                // Only show Firebase connection message to admins
-                if (isAdmin) {
-                    showNotification('Connected to Firebase!', 'success');
-                }
-
             } catch (error) {
                 console.error('Firebase initialization error:', error);
-                // Only show technical errors to admins
-                if (isAdmin) {
-                    showNotification('Firebase connection failed. Check console for details.', 'error');
-                }
-                updateConnectionStatus(false, error.message);
-                
-                // Show fallback mode
-                setTimeout(() => {
-                    showFallbackMode();
-                }, 2000);
+                // Show placeholder stats
+                updateStats('COB', 0, 0);
+                updateStats('LUX', 0, 0);
+                updateStats('GEW', 0, 0);
             }
         }
 
-        function showFallbackMode() {
-            const container = document.getElementById('groupsContainer');
+        function loadAllianceStats() {
+            const alliances = ['COB', 'LUX', 'GEW'];
             
-            if (isAdmin) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>⚠️ Offline Mode</h3>
-                        <p>Firebase is not configured. Running in local mode.</p>
-                        <p>Players added here won't be shared with others.</p>
-                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
-                    </div>
-                `;
-                updateConnectionStatus(false, 'Running in offline mode');
-            } else {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No Players Registered</h3>
-                        <p>Add players to automatically create groups!</p>
-                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
-                    </div>
-                `;
-                updateConnectionStatus(false, 'Loading...');
-            }
-            
-            enableInterface();
-        }
-
-        function enableInterface() {
-            document.getElementById('playerInput').disabled = false;
-            document.getElementById('marchSelect').disabled = false;
-            document.getElementById('addBtn').disabled = false;
-            document.getElementById('searchInput').disabled = false;
-            document.getElementById('playerInput').focus();
-        }
-
-        function updateConnectionStatus(connected = isConnected, message = '') {
-            const statusEl = document.getElementById('connectionStatus');
-            const statusText = statusEl.querySelector('span');
-            
-            if (connected) {
-                statusEl.className = 'connection-status connected';
-                statusText.textContent = '🟢 Connected - Real-time sync active';
-            } else if (message) {
-                statusEl.className = 'connection-status disconnected';
-                statusText.textContent = `🔴 ${message}`;
-            } else {
-                statusEl.className = 'connection-status disconnected';
-                statusText.textContent = '🔴 Disconnected - Changes not synced';
-            }
-        }
-
-        function updateOnlineCount() {
-            const count = Object.keys(localPlayers).length;
-            const countEl = document.getElementById('onlineCount');
-            countEl.textContent = `👥 ${count} player${count !== 1 ? 's' : ''} registered in ${currentAlliance}`;
-        }
-
-        function toggleAdminSection() {
-            const section = document.getElementById('adminSection');
-            const isVisible = section.classList.contains('show');
-            
-            if (isVisible) {
-                section.classList.remove('show');
-                clearAuthError();
-            } else {
-                section.classList.add('show');
-                if (!isAdmin) {
-                    document.getElementById('adminEmail').focus();
-                }
-            }
-        }
-
-        async function adminLogin() {
-            const email = document.getElementById('adminEmail').value.trim();
-            const password = document.getElementById('adminPassword').value;
-            
-            if (!email || !password) {
-                showAuthError('Please enter both email and password');
-                return;
-            }
-
-            try {
-                document.getElementById('adminLoginBtn').disabled = true;
-                clearAuthError();
+            alliances.forEach(alliance => {
+                const ref = database.ref(`event/alliances/${alliance}/players`);
                 
-                // Sign in with Firebase Auth
-                await auth.signInWithEmailAndPassword(email, password);
-                
-                // Clear form
-                document.getElementById('adminEmail').value = '';
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminSection').classList.remove('show');
-                
-                showNotification('Admin access granted!', 'success');
-                
-            } catch (error) {
-                console.error('Admin login error:', error);
-                
-                let errorMessage = 'Login failed. Please check your credentials.';
-                
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        errorMessage = 'Admin account not found.';
-                        break;
-                    case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Invalid email address.';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = 'Too many failed attempts. Try again later.';
-                        break;
-                }
-                
-                showAuthError(errorMessage);
-                showNotification('Admin login failed', 'error');
-            } finally {
-                document.getElementById('adminLoginBtn').disabled = false;
-            }
-        }
-
-        async function adminLogout() {
-            try {
-                await auth.signOut();
-                showNotification('Admin logged out', 'info');
-                document.getElementById('adminSection').classList.remove('show');
-            } catch (error) {
-                console.error('Logout error:', error);
-                showNotification('Logout failed', 'error');
-            }
-        }
-
-        function showAdminMode() {
-            document.getElementById('adminStatus').classList.add('active');
-            document.getElementById('adminLoginBtn').style.display = 'none';
-            document.getElementById('adminLogoutBtn').style.display = 'inline-block';
-            document.getElementById('clearBtn').style.display = 'block';
-            document.getElementById('clearBtn').disabled = false;
-            
-            if (currentAdminUser) {
-                const adminEmail = currentAdminUser.email;
-                const displayEmail = adminEmail.length > 20 ? adminEmail.substring(0, 17) + '...' : adminEmail;
-                document.getElementById('adminUser').textContent = displayEmail;
-            }
-        }
-
-        function hideAdminMode() {
-            document.getElementById('adminStatus').classList.remove('active');
-            document.getElementById('adminLoginBtn').style.display = 'inline-block';
-            document.getElementById('adminLogoutBtn').style.display = 'none';
-            document.getElementById('clearBtn').style.display = 'none';
-            document.getElementById('adminUser').textContent = '';
-        }
-
-        function showAuthError(message) {
-            const errorEl = document.getElementById('authError');
-            errorEl.textContent = message;
-        }
-
-        function clearAuthError() {
-            document.getElementById('authError').textContent = '';
-        }
-
-        async function addPlayer() {
-            const input = document.getElementById('playerInput');
-            const marchSelect = document.getElementById('marchSelect');
-            const playerName = input.value.trim();
-            const marchValue = marchSelect.value;
-            
-            if (playerName === '') {
-                showNotification('Please enter a player name!', 'error');
-                return;
-            }
-            
-            if (localPlayers[playerName]) {
-                showNotification('This player is already registered!', 'error');
-                return;
-            }
-
-            try {
-                if (isConnected && playersRef) {
-                    // Add to Firebase with march limit and timestamp
-                    await playersRef.child(playerName).set({
-                        marchLimit: marchValue,
-                        timestamp: Date.now()
-                    });
-                    currentPlayerName = playerName; // Remember current player
+                ref.on('value', (snapshot) => {
+                    const data = snapshot.val() || {};
+                    const playerCount = Object.keys(data).length;
+                    const groupCount = calculateGroupCount(data);
                     
-                    const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
-                    showNotification(`${playerName} joined ${currentAlliance} as ${displayText}!`, 'success');
-                } else {
-                    // Fallback to local mode
-                    localPlayers[playerName] = {
-                        marchLimit: marchValue,
-                        timestamp: Date.now()
-                    };
-                    allAlliancesData[currentAlliance] = localPlayers;
-                    currentPlayerName = playerName;
-                    reorganizeGroups();
-                    updateAllianceStats();
-                    
-                    const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
-                    if (isAdmin) {
-                        showNotification(`${playerName} added locally to ${currentAlliance}`, 'info');
-                    } else {
-                        showNotification(`${playerName} joined ${currentAlliance} as ${displayText}!`, 'success');
-                    }
-                }
-                
-                input.value = '';
-                input.focus();
-                
-            } catch (error) {
-                console.error('Error adding player:', error);
-                showNotification('Failed to add player. Please try again.', 'error');
-            }
-        }
-
-        async function removePlayer(playerName) {
-            try {
-                if (isConnected && playersRef) {
-                    // Remove from Firebase
-                    await playersRef.child(playerName).remove();
-                    
-                    if (playerName === currentPlayerName) {
-                        currentPlayerName = '';
-                    }
-                    
-                    showNotification(`${playerName} left ${currentAlliance}`, 'info');
-                } else {
-                    // Fallback to local mode
-                    delete localPlayers[playerName];
-                    allAlliancesData[currentAlliance] = localPlayers;
-                    
-                    if (playerName === currentPlayerName) {
-                        currentPlayerName = '';
-                    }
-                    
-                    reorganizeGroups();
-                    updateAllianceStats();
-                    
-                    if (isAdmin) {
-                        showNotification(`${playerName} removed from ${currentAlliance}`, 'info');
-                    } else {
-                        showNotification(`${playerName} left ${currentAlliance}`, 'info');
-                    }
-                }
-            } catch (error) {
-                console.error('Error removing player:', error);
-                showNotification('Failed to remove player. Please try again.', 'error');
-            }
-        }
-
-        function canRemovePlayer(playerName) {
-            // Only admins can remove players
-            return isAdmin;
-        }
-
-        function reorganizeGroups() {
-            groups = calculateGroupsForAlliance(localPlayers);
-            updateDisplay();
-        }
-
-        async function clearAllPlayers() {
-            if (Object.keys(localPlayers).length === 0) {
-                showNotification(`No players to clear in ${currentAlliance}!`, 'error');
-                return;
-            }
-
-            if (!isAdmin) {
-                showNotification('Admin access required!', 'error');
-                return;
-            }
-
-            if (!confirm(`Are you sure you want to remove ALL players from ${currentAlliance} alliance?`)) {
-                return;
-            }
-
-            try {
-                if (isConnected && playersRef) {
-                    // Clear Firebase
-                    await playersRef.remove();
-                    currentPlayerName = '';
-                    showNotification(`All players removed from ${currentAlliance}`, 'info');
-                } else {
-                    // Clear local
-                    localPlayers = {};
-                    allAlliancesData[currentAlliance] = {};
-                    currentPlayerName = '';
-                    reorganizeGroups();
-                    updateAllianceStats();
-                    
-                    if (isAdmin) {
-                        showNotification(`All players removed from ${currentAlliance} locally`, 'info');
-                    } else {
-                        showNotification(`All players removed from ${currentAlliance}`, 'info');
-                    }
-                }
-            } catch (error) {
-                console.error('Error clearing players:', error);
-                showNotification('Failed to clear players. Please try again.', 'error');
-            }
-        }
-
-        function updateDisplay() {
-            const container = document.getElementById('groupsContainer');
-            
-            if (Object.keys(localPlayers).length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No Players Registered in ${currentAlliance}</h3>
-                        <p>Add players to automatically create groups!</p>
-                        <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = groups.map(group => {
-                    // Check if this group has any search matches
-                    let hasSearchMatch = false;
-                    if (currentSearchTerm) {
-                        hasSearchMatch = group.players.some(player => 
-                            player.name.toLowerCase().includes(currentSearchTerm)
-                        );
-                    }
-                    
-                    return `
-                        <div class="group ${group.isFull ? '' : 'waiting'} ${group.isOffline ? 'offline-group' : ''} ${hasSearchMatch ? 'has-search-match' : ''}"
-                            ondragover="allowDrop(event)"
-                            ondrop="handleDrop(event, ${group.groupNumber - 1})">
-                            
-                            <div class="group-header">
-                                <div class="group-title">${currentAlliance} Group ${group.groupNumber}</div>
-                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''}">${group.isOffline ? 'Offline' : `${group.marchLimit} march${group.marchLimit > 1 ? 'es' : ''}`}</div>
-                                <div class="group-count">
-                                    ${group.players.length}/${group.maxSize} players
-                                    ${group.isFull ? '✅' : '⏳'}
-                                </div>
-                            </div>
-                            
-                            <ul class="player-list">
-                                ${group.players.map(player => {
-                                    // Check if this player matches the search
-                                    const isSearchMatch = currentSearchTerm && 
-                                        player.name.toLowerCase().includes(currentSearchTerm);
-                                    
-                                    return `
-                                        <li class="player-item ${isSearchMatch ? 'search-match' : ''}"
-                                            draggable="${isAdmin}"
-                                            ondragstart="handleDragStart(event, '${player.name}')"
-                                            ondragend="handleDragEnd(event)">
-                                            
-                                            <div class="player-info">
-                                                <span class="player-name">${player.name}</span>
-                                                <div class="player-march">${player.marchLimit === 'offline' ? 'Offline player' : `${player.marchLimit} march limit`}</div>
-                                            </div>
-                                            
-                                            ${isAdmin ? `<button onclick="removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
-                                        </li>
-                                    `;
-                                }).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }).join('');
-            }
-            
-            updateStats();
-        }
-
-        function updateStats() {
-            document.getElementById('totalPlayers').textContent = Object.keys(localPlayers).length;
-            document.getElementById('totalGroups').textContent = groups.length;
-        }
-
-        // Drag & Drop functionality for admins
-        let draggedPlayerName = null;
-
-        function handleDragStart(event, playerName) {
-            if (!isAdmin) return;
-            draggedPlayerName = playerName;
-            event.dataTransfer.setData("text/plain", playerName);
-            event.dataTransfer.effectAllowed = "move";
-        }
-
-        function handleDragEnd(event) {
-            draggedPlayerName = null;
-        }
-
-        function allowDrop(event) {
-            if (isAdmin) event.preventDefault();
-        }
-
-        async function handleDrop(event, targetGroupIndex) {
-            event.preventDefault();
-
-            const playerName = event.dataTransfer.getData("text/plain");
-
-            if (!isAdmin || !playerName || !(playerName in localPlayers)) {
-                console.warn('Drop ignored – invalid playerName:', playerName);
-                return;
-            }
-
-            const targetGroup = groups[targetGroupIndex];
-            if (!targetGroup) return;
-
-            if (targetGroup.players.length >= targetGroup.maxSize) {
-                showNotification("Target group is full!", "error");
-                return;
-            }
-
-            const player = localPlayers[playerName];
-            if (!player) return;
-
-            try {
-                if (isConnected && playersRef) {
-                    // Update in Firebase for current alliance
-                    await playersRef.child(playerName).update({
-                        marchLimit: targetGroup.marchLimit,
-                        timestamp: Date.now(),
-                    });
-                } else {
-                    // Update locally
-                    localPlayers[playerName].marchLimit = targetGroup.marchLimit;
-                    localPlayers[playerName].timestamp = Date.now();
-                    allAlliancesData[currentAlliance] = localPlayers;
-                    reorganizeGroups();
-                    updateAllianceStats();
-                }
-
-                showNotification(`${playerName} moved to ${currentAlliance} ${targetGroup.marchLimit === 'offline' ? 'offline' : targetGroup.marchLimit + ' march'} group`, "info");
-            } catch (error) {
-                console.error("Error moving player:", error);
-                showNotification("Failed to move player!", "error");
-            }
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            
-            notificationText.textContent = message;
-            
-            // Color based on type
-            if (type === 'error') {
-                notification.style.background = 'rgba(244, 67, 54, 0.9)';
-            } else if (type === 'info') {
-                notification.style.background = 'rgba(33, 150, 243, 0.9)';
-            } else {
-                notification.style.background = 'rgba(76, 175, 80, 0.9)';
-            }
-            
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        // Event listeners
-        document.getElementById('playerInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addPlayer();
-            }
-        });
-
-        document.getElementById('adminEmail').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('adminPassword').focus();
-            }
-        });
-
-        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                adminLogin();
-            }
-        });
-
-        // Initialize Firebase when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
-            
-            // Set up search event listeners
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', searchPlayer);
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchPlayer();
-                    }
+                    updateStats(alliance, playerCount, groupCount);
                 });
-                console.log('Search listeners added');
-            } else {
-                console.error('Search input not found!');
-            }
+            });
+        }
+
+        function calculateGroupCount(playersData) {
+            const playersByMarchLimit = {};
             
-            // Initialize alliance data
-            ALLIANCES.forEach(alliance => {
-                allAlliancesData[alliance] = {};
+            Object.entries(playersData).forEach(([playerName, playerData]) => {
+                const marchLimit = playerData.marchLimit || 3;
+                if (!playersByMarchLimit[marchLimit]) {
+                    playersByMarchLimit[marchLimit] = [];
+                }
+                playersByMarchLimit[marchLimit].push(playerName);
             });
             
-            initializeFirebase();
-        });
+            let totalGroups = 0;
+            Object.entries(playersByMarchLimit).forEach(([marchLimit, players]) => {
+                const groupSize = marchLimit === 'offline' ? 4 : parseInt(marchLimit);
+                totalGroups += Math.ceil(players.length / groupSize);
+            });
+            
+            return totalGroups;
+        }
 
-        // Handle visibility change to reconnect if needed
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && !isConnected) {
-                // Try to reconnect when tab becomes visible
-                setTimeout(initializeFirebase, 1000);
-            }
-        });
+        function updateStats(alliance, playerCount, groupCount) {
+            const playersEl = document.getElementById(`${alliance.toLowerCase()}Players`);
+            const groupsEl = document.getElementById(`${alliance.toLowerCase()}Groups`);
+            
+            if (playersEl) playersEl.textContent = playerCount;
+            if (groupsEl) groupsEl.textContent = groupCount;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
     </script>
 </body>
 </html>
