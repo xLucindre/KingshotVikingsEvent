@@ -584,18 +584,22 @@ class KingshotCore {
             const uniqueMarchLimit = `${originalMarchLimit}_newgroup_${Date.now()}`;
             
             if (this.isConnected && this.playersRef) {
+                // Remove custom group name and set new march limit - new group gets default name
                 await this.playersRef.child(playerName).update({
                     marchLimit: uniqueMarchLimit,
                     timestamp: Date.now(),
+                    customGroupName: null // Remove custom name - new group gets default name
                 });
             } else {
                 this.localPlayers[playerName].marchLimit = uniqueMarchLimit;
                 this.localPlayers[playerName].timestamp = Date.now();
+                // Remove custom group name - new group gets default name
+                delete this.localPlayers[playerName].customGroupName;
                 this.reorganizeGroups();
             }
 
             const displayMarch = originalMarchLimit === 'offline' ? 'offline' : `${originalMarchLimit} march`;
-            this.showNotification(`${playerName} moved to new ${displayMarch} group`, "success");
+            this.showNotification(`${playerName} moved to new ${displayMarch} group with default name`, "success");
         } catch (error) {
             console.error("Error creating new group:", error);
             this.showNotification("Failed to create new group!", "error");
