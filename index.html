@@ -1004,6 +1004,17 @@
                 font-size: 2.5rem;
                 flex-direction: column;
                 gap: 15px;
+                background: white;
+                -webkit-background-clip: initial;
+                -webkit-text-fill-color: initial;
+                background-clip: initial;
+                color: white;
+            }
+
+            *, *::before, *::after {
+                animation-duration: 0.1s !important;
+                animation-delay: 0s !important;
+                transition-duration: 0.1s !important;
             }
 
             .hero-logo {
@@ -1059,6 +1070,11 @@
                 padding: 8px 20px;
                 backdrop-filter: blur(8px);
                 will-change: transform;
+                animation-play-state: running;
+            }
+
+            .page-hidden .flying-message-content {
+                animation-play-state: paused;
             }
 
             .guide-card, .info-post, .info-section {
