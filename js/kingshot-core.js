@@ -54,6 +54,8 @@ class KingshotCore {
                 background: ${this.config.colors.group}; 
             }
             
+            /* Admin-mixed groups styling - REMOVED */
+            
             /* Enhanced player drag feedback */
             .player-item.dragging {
                 opacity: 0.5;
@@ -833,17 +835,49 @@ class KingshotCore {
             this.showNotification(`This player is already registered in ${this.config.allianceName}!`, 'error');
             return;
         }
+
+        // Find existing players with same tags to join their group
+        let targetTimestamp = Date.now();
+        
+        // Look for existing players with same marchLimit and timeSlot
+        const existingPlayersWithSameTags = Object.entries(this.localPlayers).filter(([_, playerData]) => {
+            const originalMarchLimit = playerData.marchLimit.toString().split('_newgroup_')[0];
+            return originalMarchLimit === marchValue && playerData.timeSlot === timeValue;
+        });
+        
+        if (existingPlayersWithSameTags.length > 0) {
+            // Find the OLDEST group that isn't full yet (prioritize earlier groups)
+            const sortedPlayers = existingPlayersWithSameTags.sort(([_, a], [__, b]) => a.timestamp - b.timestamp);
+            
+            for (const [_, existingPlayerData] of sortedPlayers) {
+                // Check if this player's group has space
+                const playersInSameGroup = Object.entries(this.localPlayers).filter(([__, playerData]) => {
+                    const originalMarchLimit = playerData.marchLimit.toString().split('_newgroup_')[0];
+                    const timeDiff = Math.abs(playerData.timestamp - existingPlayerData.timestamp);
+                    return originalMarchLimit === marchValue && 
+                           playerData.timeSlot === timeValue && 
+                           timeDiff < 10000; // Same group threshold (10 seconds)
+                });
+                
+                if (playersInSameGroup.length < parseInt(marchValue)) {
+                    // Join this group by using similar timestamp (within the 10-second window)
+                    targetTimestamp = existingPlayerData.timestamp + Math.random() * 1000; // Small random offset to maintain order
+                    console.log(`📥 New player ${playerName} joining existing group with timestamp ${targetTimestamp}`);
+                    break;
+                }
+            }
+        }
     
         try {
             if (this.isConnected && this.playersRef) {
                 await this.playersRef.child(playerName).set({
                     marchLimit: marchValue,
                     timeSlot: timeValue,
-                    timestamp: Date.now()
+                    timestamp: targetTimestamp
                 });
                 this.currentPlayerName = playerName;
                 
-                // UPDATED: Better messaging for offline players
+                // Better messaging for offline players
                 const displayText = `${marchValue} marches`;
                 const timeText = timeValue === 'offline' ? 'offline' : `at ${timeValue}`;
                 this.showNotification(`${playerName} joined ${this.config.allianceName} with ${displayText} ${timeText}!`, 'success');
@@ -852,7 +886,7 @@ class KingshotCore {
                 this.localPlayers[playerName] = {
                     marchLimit: marchValue,
                     timeSlot: timeValue,
-                    timestamp: Date.now()
+                    timestamp: targetTimestamp
                 };
                 this.currentPlayerName = playerName;
                 this.reorganizeGroups();
@@ -948,96 +982,144 @@ class KingshotCore {
     reorganizeGroups() {
         this.groups = [];
         
-        // Create an array of all players with their info and find earliest timestamp for each march limit + time slot combo
+        // Create an array of all players with their info
         const allPlayers = [];
-        const earliestTimestampByCombo = {};
         
         Object.entries(this.localPlayers).forEach(([playerName, playerData]) => {
-            const marchLimit = playerData.marchLimit || 3;
+            // Use original tags always (no modifications)
+            const marchLimit = playerData.marchLimit.toString().split('_newgroup_')[0]; // Clean legacy data
             const timeSlot = playerData.timeSlot || 'at all times';
             const timestamp = playerData.timestamp || 0;
+            const adminOverride = playerData.adminGroupOverride || null;
             
             allPlayers.push({
                 name: playerName,
                 marchLimit: marchLimit,
                 timeSlot: timeSlot,
-                timestamp: timestamp
+                timestamp: timestamp,
+                adminOverride: adminOverride,
+                originalData: playerData
             });
-            
-            // Create combo key for grouping
-            const comboKey = `${marchLimit}_${timeSlot}`;
-            
-            // Track earliest timestamp for each combo to determine group order
-            if (!earliestTimestampByCombo[comboKey] || timestamp < earliestTimestampByCombo[comboKey]) {
-                earliestTimestampByCombo[comboKey] = timestamp;
-            }
         });
         
         // Sort players by timestamp (first come, first served)
         allPlayers.sort((a, b) => a.timestamp - b.timestamp);
         
-        // Group players by march limit + time slot combo but maintain timestamp order within groups
-        const playersByCombo = {};
+        const processedPlayers = new Set();
+        
+        // First, handle admin-grouped players (players with same adminGroupOverride)
+        const adminGroups = {};
         allPlayers.forEach(player => {
-            const comboKey = `${player.marchLimit}_${player.timeSlot}`;
-            if (!playersByCombo[comboKey]) {
-                playersByCombo[comboKey] = [];
+            if (player.adminOverride && !processedPlayers.has(player.name)) {
+                if (!adminGroups[player.adminOverride]) {
+                    adminGroups[player.adminOverride] = [];
+                }
+                adminGroups[player.adminOverride].push(player);
+                processedPlayers.add(player.name);
             }
-            playersByCombo[comboKey].push(player);
         });
         
-        // Create groups ordered by earliest player timestamp in each combo
-        const combosByFirstPlayer = Object.keys(playersByCombo).sort((a, b) => {
-            return earliestTimestampByCombo[a] - earliestTimestampByCombo[b];
-        });
-        
-        combosByFirstPlayer.forEach(comboKey => {
-            const players = playersByCombo[comboKey];
-            const [marchLimit, timeSlot] = comboKey.split('_', 2);
-            let isNewGroup = false;
+        // Create groups for admin-overridden players
+        Object.values(adminGroups).forEach(groupPlayers => {
+            if (groupPlayers.length === 0) return;
             
-            // Extract original march limit (remove newgroup identifier if present)
-            const originalMarchLimit = marchLimit.toString().split('_newgroup_')[0];
+            // Sort by timestamp within admin group
+            groupPlayers.sort((a, b) => a.timestamp - b.timestamp);
             
-            // UPDATED: All players use their march limit as group size (no special offline treatment)
-            let groupSize = parseInt(originalMarchLimit);
+            const groupSize = parseInt(groupPlayers[0].marchLimit);
             
-            if (marchLimit.includes('_newgroup_')) {
-                // New groups created by drag & drop - use original march limit for size
-                isNewGroup = true;
+            // Check if any player has a custom group name
+            let customGroupName = null;
+            for (const player of groupPlayers) {
+                const playerData = this.localPlayers[player.name];
+                if (playerData && playerData.customGroupName) {
+                    customGroupName = playerData.customGroupName;
+                    break;
+                }
             }
             
-            // Split players into groups in order
-            for (let i = 0; i < players.length; i += groupSize) {
-                const group = players.slice(i, i + groupSize);
+            this.groups.push({
+                players: groupPlayers,
+                marchLimit: groupPlayers[0].marchLimit,
+                timeSlot: groupPlayers[0].timeSlot,
+                displayMarchLimit: groupPlayers[0].marchLimit,
+                groupNumber: this.groups.length + 1,
+                maxSize: groupSize,
+                isFull: groupPlayers.length >= groupSize,
+                isOffline: groupPlayers[0].timeSlot === 'offline',
+                isCustom: false,
+                groupType: 'normal',
+                customName: customGroupName
+            });
+        });
+        
+        // Then handle regular players (group by tags + timestamp proximity)
+        allPlayers.forEach(player => {
+            if (processedPlayers.has(player.name)) return;
+            
+            const groupSize = parseInt(player.marchLimit);
+            
+            // Find other players with same tags
+            const candidatePlayers = allPlayers.filter(otherPlayer => {
+                if (processedPlayers.has(otherPlayer.name)) return false;
+                if (otherPlayer.adminOverride) return false; // Skip admin-overridden players
+                if (otherPlayer.marchLimit !== player.marchLimit) return false;
+                if (otherPlayer.timeSlot !== player.timeSlot) return false;
+                return true;
+            });
+            
+            // Sort candidates by timestamp
+            candidatePlayers.sort((a, b) => a.timestamp - b.timestamp);
+            
+            // Group by timestamp proximity - players within 10 seconds belong together
+            const groupPlayers = [];
+            let currentGroupTimestamp = player.timestamp;
+            
+            for (const candidate of candidatePlayers) {
+                const timeDiff = Math.abs(candidate.timestamp - currentGroupTimestamp);
                 
-                let displayMarchLimit = originalMarchLimit;
-                let groupType = '';
-                
-                // Check if any player in this group has a custom group name
-                let customGroupName = null;
-                for (const player of group) {
-                    const playerData = this.localPlayers[player.name];
-                    if (playerData && playerData.customGroupName) {
-                        customGroupName = playerData.customGroupName;
-                        break; // Use the first custom name found
+                // If timestamp is close to current group's range, add to group
+                if (timeDiff < 10000 && groupPlayers.length < groupSize) {
+                    groupPlayers.push(candidate);
+                    processedPlayers.add(candidate.name);
+                    
+                    // Update group timestamp range
+                    if (candidate.timestamp > currentGroupTimestamp) {
+                        currentGroupTimestamp = candidate.timestamp;
                     }
                 }
-                
-                this.groups.push({
-                    players: group,
-                    marchLimit: marchLimit,
-                    timeSlot: timeSlot,
-                    displayMarchLimit: displayMarchLimit,
-                    groupNumber: this.groups.length + 1,
-                    maxSize: groupSize,
-                    isFull: group.length === groupSize,
-                    isOffline: timeSlot === 'offline', // UPDATED: Based on time slot, not march limit
-                    isCustom: false,
-                    groupType: groupType,
-                    customName: customGroupName
-                });
             }
+            
+            // If no players were added to group, add the original player
+            if (groupPlayers.length === 0) {
+                groupPlayers.push(player);
+                processedPlayers.add(player.name);
+            }
+            
+            // Check if any player in this group has a custom group name
+            let customGroupName = null;
+            for (const groupPlayer of groupPlayers) {
+                const playerData = this.localPlayers[groupPlayer.name];
+                if (playerData && playerData.customGroupName) {
+                    customGroupName = playerData.customGroupName;
+                    break;
+                }
+            }
+            
+            // Create the group
+            this.groups.push({
+                players: groupPlayers,
+                marchLimit: player.marchLimit,
+                timeSlot: player.timeSlot,
+                displayMarchLimit: player.marchLimit,
+                groupNumber: this.groups.length + 1,
+                maxSize: groupSize,
+                isFull: groupPlayers.length === groupSize,
+                isOffline: player.timeSlot === 'offline',
+                isCustom: false,
+                groupType: 'normal',
+                customName: customGroupName
+            });
         });
         
         this.updateDisplay();
@@ -1128,11 +1210,14 @@ class KingshotCore {
         
         // Add visual feedback
         event.target.style.opacity = '0.5';
+        console.log('🎯 Drag started for player:', playerName);
     }
 
     handleDragEnd(event) {
         // Remove visual feedback
         event.target.style.opacity = '';
+        document.body.style.backgroundColor = '';
+        console.log('🎯 Drag ended');
     }
 
     allowDrop(event) {
@@ -1165,21 +1250,39 @@ class KingshotCore {
         if (!player) return;
 
         try {
+            // Store admin override to force this player into this specific group
+            const adminOverrideId = `admin_group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
             if (this.isConnected && this.playersRef) {
                 await this.playersRef.child(playerName).update({
-                    marchLimit: targetGroup.marchLimit,
-                    timeSlot: targetGroup.timeSlot,
-                    timestamp: Date.now(),
+                    // Player keeps ALL original tags - they are NEVER changed
+                    adminGroupOverride: adminOverrideId, // Add admin override to force grouping
+                    timestamp: Date.now() // Update timestamp for tracking
                 });
+                
+                // Also update all other players in the target group to have the same override
+                const updates = {};
+                for (const targetPlayer of targetGroup.players) {
+                    updates[`${targetPlayer.name}/adminGroupOverride`] = adminOverrideId;
+                }
+                if (Object.keys(updates).length > 0) {
+                    await this.playersRef.update(updates);
+                }
             } else {
-                this.localPlayers[playerName].marchLimit = targetGroup.marchLimit;
-                this.localPlayers[playerName].timeSlot = targetGroup.timeSlot;
+                // Local mode
+                this.localPlayers[playerName].adminGroupOverride = adminOverrideId;
                 this.localPlayers[playerName].timestamp = Date.now();
+                
+                // Update target group players
+                for (const targetPlayer of targetGroup.players) {
+                    if (this.localPlayers[targetPlayer.name]) {
+                        this.localPlayers[targetPlayer.name].adminGroupOverride = adminOverrideId;
+                    }
+                }
                 this.reorganizeGroups();
             }
 
-            const groupDesc = targetGroup.marchLimit === 'offline' ? 'offline' : `${targetGroup.marchLimit} march`;
-            this.showNotification(`${playerName} moved to ${this.config.allianceName} ${groupDesc} group (${targetGroup.timeSlot})`, "info");
+            this.showNotification(`${playerName} moved to group by admin (keeps original tags: ${player.marchLimit} marches, ${player.timeSlot})`, "info");
         } catch (error) {
             console.error("Error moving player:", error);
             this.showNotification("Failed to move player!", "error");
@@ -1192,40 +1295,66 @@ class KingshotCore {
         event.stopPropagation();
 
         const playerName = event.dataTransfer.getData("text/plain");
+        console.log('🚀 handleCreateNewGroup called for player:', playerName);
 
         if (!this.isAdmin || !playerName || !(playerName in this.localPlayers)) {
-            console.warn('Create new group ignored – invalid playerName:', playerName);
+            console.warn('❌ Create new group ignored – invalid conditions:', {
+                isAdmin: this.isAdmin,
+                playerName: playerName,
+                playerExists: playerName in this.localPlayers
+            });
             return;
         }
 
         const player = this.localPlayers[playerName];
-        if (!player) return;
+        if (!player) {
+            console.warn('❌ Player data not found:', playerName);
+            return;
+        }
+
+        // Find which group this player is currently in
+        let currentGroup = null;
+        for (const group of this.groups) {
+            if (group.players.some(p => p.name === playerName)) {
+                currentGroup = group;
+                break;
+            }
+        }
+
+        // If player is alone in their group, no point in creating a new group
+        if (!currentGroup || currentGroup.players.length <= 1) {
+            console.log('ℹ️ Player is alone in group - no new group needed');
+            this.showNotification(`${playerName} is already alone in their group`, "info");
+            return;
+        }
+
+        console.log('✅ Creating new group for player:', playerName, 'from group with', currentGroup.players.length, 'players');
 
         try {
-            // Create a unique march limit for new group (preserve original march limit + unique identifier)
-            const originalMarchLimit = player.marchLimit.toString().split('_newgroup_')[0]; // Remove any existing identifier
-            const uniqueMarchLimit = `${originalMarchLimit}_newgroup_${Date.now()}`;
+            // Create a timestamp that's significantly different from others to ensure separation
+            const newTimestamp = Date.now() + (Math.random() * 60000) + 60000; // Random offset + 1 minute
             
             if (this.isConnected && this.playersRef) {
-                // Remove custom group name and set new march limit - new group gets default name
                 await this.playersRef.child(playerName).update({
-                    marchLimit: uniqueMarchLimit,
-                    timeSlot: player.timeSlot, // Keep original time slot
-                    timestamp: Date.now(),
+                    // Player keeps ALL original tags - they are NEVER changed
+                    adminGroupOverride: null, // Remove any admin override to create independent group
+                    timestamp: newTimestamp, // Significantly different timestamp to ensure new group
                     customGroupName: null // Remove custom name - new group gets default name
                 });
+                console.log('✅ Firebase updated for new group');
             } else {
-                this.localPlayers[playerName].marchLimit = uniqueMarchLimit;
-                this.localPlayers[playerName].timestamp = Date.now();
-                // Remove custom group name - new group gets default name
+                // Player keeps original tags, just update timestamp and remove overrides
+                this.localPlayers[playerName].timestamp = newTimestamp;
+                delete this.localPlayers[playerName].adminGroupOverride;
                 delete this.localPlayers[playerName].customGroupName;
+                console.log('✅ Local data updated for new group');
                 this.reorganizeGroups();
             }
 
-            const displayMarch = originalMarchLimit === 'offline' ? 'offline' : `${originalMarchLimit} march`;
-            this.showNotification(`${playerName} moved to new ${displayMarch} group (${player.timeSlot})`, "success");
+            this.showNotification(`${playerName} moved to new group (${player.marchLimit} marches, ${player.timeSlot})`, "success");
+            console.log('✅ New group created successfully');
         } catch (error) {
-            console.error("Error creating new group:", error);
+            console.error('❌ Error creating new group:', error);
             this.showNotification("Failed to create new group!", "error");
         }
     }
@@ -1328,6 +1457,7 @@ class KingshotCore {
             this.showNotification('Failed to reset group name!', 'error');
         }
     }
+
     async handlePlayerSwap(event, targetPlayerName) {
         event.preventDefault();
         event.stopPropagation();
@@ -1353,28 +1483,29 @@ class KingshotCore {
         if (!draggedPlayer || !targetPlayer) return;
 
         try {
-            // Swap march limits
-            const tempMarchLimit = draggedPlayer.marchLimit;
+            // Players keep their original tags, we just swap their timestamps and admin overrides to change positions
+            const tempTimestamp = draggedPlayer.timestamp;
+            const tempAdminOverride = draggedPlayer.adminGroupOverride;
             
             if (this.isConnected && this.playersRef) {
-                // Update both players simultaneously
+                // Update both players' timestamps and admin overrides to swap positions
                 const updates = {};
-                updates[`${draggedPlayerName}/marchLimit`] = targetPlayer.marchLimit;
-                updates[`${draggedPlayerName}/timestamp`] = Date.now();
-                updates[`${targetPlayerName}/marchLimit`] = tempMarchLimit;
-                updates[`${targetPlayerName}/timestamp`] = Date.now();
+                updates[`${draggedPlayerName}/timestamp`] = targetPlayer.timestamp;
+                updates[`${draggedPlayerName}/adminGroupOverride`] = targetPlayer.adminGroupOverride || null;
+                updates[`${targetPlayerName}/timestamp`] = tempTimestamp;
+                updates[`${targetPlayerName}/adminGroupOverride`] = tempAdminOverride || null;
                 
                 await this.playersRef.update(updates);
             } else {
-                // Update locally
-                this.localPlayers[draggedPlayerName].marchLimit = targetPlayer.marchLimit;
-                this.localPlayers[draggedPlayerName].timestamp = Date.now();
-                this.localPlayers[targetPlayerName].marchLimit = tempMarchLimit;
-                this.localPlayers[targetPlayerName].timestamp = Date.now();
+                // Update locally - swap timestamps and admin overrides, keep original tags
+                this.localPlayers[draggedPlayerName].timestamp = targetPlayer.timestamp;
+                this.localPlayers[draggedPlayerName].adminGroupOverride = targetPlayer.adminGroupOverride;
+                this.localPlayers[targetPlayerName].timestamp = tempTimestamp;
+                this.localPlayers[targetPlayerName].adminGroupOverride = tempAdminOverride;
                 this.reorganizeGroups();
             }
 
-            this.showNotification(`${draggedPlayerName} ⇄ ${targetPlayerName} swapped positions`, "success");
+            this.showNotification(`${draggedPlayerName} ⇄ ${targetPlayerName} swapped positions (kept original tags)`, "success");
         } catch (error) {
             console.error("Error swapping players:", error);
             this.showNotification("Failed to swap players!", "error");
@@ -1385,29 +1516,38 @@ class KingshotCore {
     isEventInUIElement(event) {
         let target = event.target;
         
-        // Allow drops completely outside the container (e.g., page margins)
+        // Debug logging
+        console.log('Checking drop target:', target, 'className:', target.className);
+        
+        // Always allow drops outside the main container
         const container = document.querySelector('.container');
-        if (container && !container.contains(target)) {
-            return false; // Allow drop outside container
+        if (!container || !container.contains(target)) {
+            console.log('✅ Drop ALLOWED - outside main container');
+            return false;
         }
         
-        // Check if inside specific UI elements that should block drops
-        while (target && target !== document.body) {
-            if (target.classList && (
-                target.classList.contains('group') || 
-                target.classList.contains('admin-drop-zone') ||
-                target.classList.contains('header') ||
-                target.classList.contains('input-section') ||
-                target.classList.contains('admin-section') ||
-                target.classList.contains('floating-actions') ||
-                target.classList.contains('notification')
-            )) {
-                return true; // Block drop in these elements
+        // Check if we're specifically in a group or other UI element that should block
+        while (target && target !== container) {
+            const className = target.className || '';
+            
+            // Block drops on specific UI elements
+            if (className.includes('group') || 
+                className.includes('player-item') || 
+                className.includes('player-list') ||
+                className.includes('header') ||
+                className.includes('input-section') ||
+                className.includes('admin-section') ||
+                className.includes('floating-actions') ||
+                className.includes('notification')) {
+                console.log('❌ Drop BLOCKED - in UI element:', className);
+                return true;
             }
             target = target.parentElement;
         }
         
-        return false; // Allow drop in empty spaces
+        // If we're in the container but not in any specific UI element, allow drop
+        console.log('✅ Drop ALLOWED - in empty space within container');
+        return false;
     }
 
     // UI Management
@@ -1447,7 +1587,7 @@ class KingshotCore {
                                     ` : ''}
                                 </div>
                                 <div class="time-badge" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; display: inline-block;">${group.timeSlot}</div>
-                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''} ${group.isCustom ? 'custom-badge' : ''}">${group.isOffline ? `Offline - ${group.displayMarchLimit} marches` : `${group.displayMarchLimit} march${group.displayMarchLimit > 1 ? 'es' : ''}`}</div>
+                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''} ${group.isCustom ? 'custom-badge' : ''}">${group.displayMarchLimit} march${group.displayMarchLimit > 1 ? 'es' : ''}</div>
                                 <div class="group-count">
                                     ${group.players.length}/${group.maxSize} players
                                     ${group.isFull ? '✅' : '⏳'}
@@ -1470,8 +1610,20 @@ class KingshotCore {
                                             
                                             <div class="player-info">
                                                 <span class="player-name">${player.name}</span>
-                                                <div class="player-march">${player.marchLimit.split('_newgroup_')[0]} march limit</div>
-                                                <div class="player-time" style="color: rgba(255, 255, 255, 0.6); font-size: 0.75rem; margin-top: 2px;">${player.timeSlot || 'at all times'}</div>
+                                                <div class="player-march">${player.marchLimit} march limit</div>
+                                                <div class="player-time" style="color: rgba(255, 255, 255, 0.6); font-size: 0.75rem; margin-top: 2px;">
+                                                    ${(() => {
+                                                        // Show preferred time if player is in a group that doesn't match their original time slot
+                                                        const playerOriginalTimeSlot = player.timeSlot || 'at all times';
+                                                        const groupTimeSlot = group.timeSlot;
+                                                        
+                                                        if (playerOriginalTimeSlot !== groupTimeSlot) {
+                                                            return `preferred time: ${playerOriginalTimeSlot}`;
+                                                        } else {
+                                                            return playerOriginalTimeSlot;
+                                                        }
+                                                    })()}
+                                                </div>
                                             </div>
                                             
                                             ${this.isAdmin ? `<button onclick="kingshot.removePlayer('${player.name}')" class="remove-btn admin" title="Admin: Remove player">✕</button>` : ''}
@@ -1682,17 +1834,48 @@ class KingshotCore {
                 });
             }
 
-            // Global drop zone for creating new groups (admin only) - anywhere outside UI elements
+            // Global drop zone for creating new groups (admin only) - simplified approach
             document.addEventListener('dragover', (e) => {
-                if (this.isAdmin && !this.isEventInUIElement(e)) {
-                    this.allowDrop(e);
+                if (!this.isAdmin) return;
+                
+                const shouldAllow = !this.isEventInUIElement(e);
+                if (shouldAllow) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎯 Global dragover - allowing drop for new group creation');
                 }
             });
             
             document.addEventListener('drop', (e) => {
-                if (this.isAdmin && !this.isEventInUIElement(e)) {
+                if (!this.isAdmin) return;
+                
+                const shouldAllow = !this.isEventInUIElement(e);
+                if (shouldAllow) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎯 Global drop triggered - creating new group');
                     this.handleCreateNewGroup(e);
                 }
+            });
+
+            // Add visual feedback for drag operations
+            document.addEventListener('dragenter', (e) => {
+                if (this.isAdmin && !this.isEventInUIElement(e)) {
+                    console.log('🎨 Visual feedback - highlighting drop zone');
+                    document.body.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
+                }
+            });
+
+            document.addEventListener('dragleave', (e) => {
+                if (this.isAdmin && !e.relatedTarget) {
+                    console.log('🎨 Visual feedback - removing highlight');
+                    document.body.style.backgroundColor = '';
+                }
+            });
+
+            document.addEventListener('dragend', (e) => {
+                console.log('🎨 Drag ended - removing all visual feedback');
+                document.body.style.backgroundColor = '';
             });
 
             // ESC key to close time slot modal
