@@ -844,6 +844,59 @@ class KingshotCore {
             const originalMarchLimit = playerData.marchLimit.toString().split('_newgroup_')[0];
             return originalMarchLimit === marchValue && playerData.timeSlot === timeValue;
         });
+
+        // Also check admin-override groups that still have space
+        const adminGroupsWithSpace = {};
+        Object.entries(this.localPlayers).forEach(([playerName, playerData]) => {
+            const originalMarchLimit = playerData.marchLimit.toString().split('_newgroup_')[0];
+            if (playerData.adminGroupOverride && 
+                originalMarchLimit === marchValue && 
+                playerData.timeSlot === timeValue) {
+                
+                if (!adminGroupsWithSpace[playerData.adminGroupOverride]) {
+                    adminGroupsWithSpace[playerData.adminGroupOverride] = [];
+                }
+                adminGroupsWithSpace[playerData.adminGroupOverride].push(playerData);
+            }
+        });
+
+        // Check if any admin group has space
+        for (const [adminGroupId, groupPlayers] of Object.entries(adminGroupsWithSpace)) {
+            if (groupPlayers.length < parseInt(marchValue)) {
+                // Join this admin group
+                targetTimestamp = groupPlayers[0].timestamp + Math.random() * 1000;
+                console.log(`📥 New player ${playerName} joining admin group ${adminGroupId} with ${groupPlayers.length} players`);
+                
+                // Set the same admin override to join the group
+                const playerData = {
+                    marchLimit: marchValue,
+                    timeSlot: timeValue,
+                    timestamp: targetTimestamp,
+                    adminGroupOverride: adminGroupId
+                };
+                
+                try {
+                    if (this.isConnected && this.playersRef) {
+                        await this.playersRef.child(playerName).set(playerData);
+                        this.currentPlayerName = playerName;
+                        this.showNotification(`${playerName} joined existing ${this.config.allianceName} group!`, 'success');
+                    } else {
+                        this.localPlayers[playerName] = playerData;
+                        this.currentPlayerName = playerName;
+                        this.reorganizeGroups();
+                        this.showNotification(`${playerName} joined existing ${this.config.allianceName} group!`, 'success');
+                    }
+                    
+                    input.value = '';
+                    input.focus();
+                    return; // Exit early - player was added to admin group
+                    
+                } catch (error) {
+                    console.error('Error adding player to admin group:', error);
+                    // Continue with normal logic if admin group join fails
+                }
+            }
+        }
         
         if (existingPlayersWithSameTags.length > 0) {
             // Find the OLDEST group that isn't full yet (prioritize earlier groups)
