@@ -994,6 +994,8 @@
             }
 
             .hero-section {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.15);
                 padding: 40px 20px;
                 margin-bottom: 40px;
             }
@@ -1019,6 +1021,8 @@
             }
 
             .alliance-card {
+                backdrop-filter: blur(10px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
                 padding: 30px 20px;
             }
 
@@ -1050,9 +1054,37 @@
 
             .flying-message-content {
                 top: calc(100% + 5px);
-                transform: translateY(0);
+                transform: translate3d(-100%, -50%, 0);
                 font-size: 0.95rem;
                 padding: 8px 20px;
+                backdrop-filter: blur(8px);
+                will-change: transform;
+            }
+
+            .guide-card, .info-post, .info-section {
+                backdrop-filter: blur(8px); /* Noch weniger Blur */
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            }
+
+            @keyframes crystalFlyAcross {
+                0% { 
+                    transform: translate3d(-100%, -50%, 0); 
+                    left: -10%; 
+                }
+                100% { 
+                    transform: translate3d(100%, -50%, 0); 
+                    left: 110%; 
+                }
+            }
+
+            .alliance-card:hover, 
+            .guide-card:hover, 
+            .info-post:hover {
+                transform: none; /* Keine Hover-Transforms auf Mobile */
+            }
+
+            body::before {
+                display: none;
             }
 
             /* Mobile drag & drop adjustments */
@@ -2126,6 +2158,31 @@
                 'blue': '💙'
             };
             return icons[color];
+        }
+
+        // Mobile Performance optimization
+        if (window.innerWidth <= 768) {
+            // Page Visibility API for Animation-Pause
+            document.addEventListener('visibilitychange', () => {
+                const body = document.body;
+                if (document.hidden) {
+                    body.classList.add('page-hidden');
+                } else {
+                    body.classList.remove('page-hidden');
+                }
+            });
+
+            // reducing event-listener for mobile
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                }, 250);
+            });
+
+            // touch-events optimization
+            document.addEventListener('touchstart', (e) => {
+            }, { passive: true });
         }
 
         // ===== EVENT LISTENERS =====
