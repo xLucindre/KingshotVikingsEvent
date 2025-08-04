@@ -151,10 +151,11 @@ class KingshotCore {
                 this.updateOnlineCount();
             });
 
-            // Listen for time slots changes
+            // Listen for time slots changes - UPDATED: Include offline as default
             this.timeSlotsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                this.timeSlots = data ? Object.values(data) : ['at all times'];
+                // Default time slots now include offline as a standard option
+                this.timeSlots = data ? Object.values(data) : ['at all times', 'offline'];
                 // Use setTimeout to ensure DOM is ready
                 setTimeout(() => {
                     this.updateTimeSlotDropdown();
@@ -189,7 +190,7 @@ class KingshotCore {
         // Clear existing options
         timeSelect.innerHTML = '';
         
-        // Add time slots
+        // Add time slots (including offline as a standard time slot)
         this.timeSlots.forEach(timeSlot => {
             const option = document.createElement('option');
             option.value = timeSlot;
@@ -457,20 +458,26 @@ class KingshotCore {
         }
         
         try {
-            const defaultTimeSlots = ['at all times'];
+            // Include offline as a default time slot
+            const defaultTimeSlots = ['at all times', 'offline'];
             
             if (this.isConnected && this.timeSlotsRef) {
                 // Save to Firebase
                 const timeSlotData = {
-                    'slot_0': 'at all times'
+                    'slot_0': 'at all times',
+                    'slot_1': 'offline'
                 };
                 
                 await this.timeSlotsRef.set(timeSlotData);
                 
-                // Update all players to default time slot
+                // Update all players to appropriate time slots
                 const playersToUpdate = {};
                 Object.keys(this.localPlayers).forEach(playerName => {
-                    playersToUpdate[`${playerName}/timeSlot`] = 'at all times';
+                    const currentTimeSlot = this.localPlayers[playerName].timeSlot;
+                    // Keep offline players offline, others go to 'at all times'
+                    if (currentTimeSlot !== 'offline' && currentTimeSlot !== 'at all times') {
+                        playersToUpdate[`${playerName}/timeSlot`] = 'at all times';
+                    }
                 });
                 
                 if (Object.keys(playersToUpdate).length > 0) {
@@ -481,7 +488,10 @@ class KingshotCore {
                 this.timeSlots = defaultTimeSlots;
                 
                 Object.keys(this.localPlayers).forEach(playerName => {
-                    this.localPlayers[playerName].timeSlot = 'at all times';
+                    const currentTimeSlot = this.localPlayers[playerName].timeSlot;
+                    if (currentTimeSlot !== 'offline' && currentTimeSlot !== 'at all times') {
+                        this.localPlayers[playerName].timeSlot = 'at all times';
+                    }
                 });
                 
                 this.updateTimeSlotDropdown();
@@ -489,7 +499,7 @@ class KingshotCore {
             }
             
             this.refreshTimeSlotsList();
-            this.showNotification('Time slots reset to default!', 'info');
+            this.showNotification('Time slots reset to default (including offline)!', 'info');
             
         } catch (error) {
             console.error('Error resetting time slots:', error);
@@ -823,7 +833,7 @@ class KingshotCore {
             this.showNotification(`This player is already registered in ${this.config.allianceName}!`, 'error');
             return;
         }
-
+    
         try {
             if (this.isConnected && this.playersRef) {
                 await this.playersRef.child(playerName).set({
@@ -833,8 +843,10 @@ class KingshotCore {
                 });
                 this.currentPlayerName = playerName;
                 
-                const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
-                this.showNotification(`${playerName} joined ${this.config.allianceName} as ${displayText} at ${timeValue}!`, 'success');
+                // UPDATED: Better messaging for offline players
+                const displayText = `${marchValue} marches`;
+                const timeText = timeValue === 'offline' ? 'offline' : `at ${timeValue}`;
+                this.showNotification(`${playerName} joined ${this.config.allianceName} with ${displayText} ${timeText}!`, 'success');
             } else {
                 // Fallback to local mode
                 this.localPlayers[playerName] = {
@@ -845,11 +857,12 @@ class KingshotCore {
                 this.currentPlayerName = playerName;
                 this.reorganizeGroups();
                 
-                const displayText = marchValue === 'offline' ? 'offline player' : `${marchValue} rallies`;
+                const displayText = `${marchValue} marches`;
+                const timeText = timeValue === 'offline' ? 'offline' : `at ${timeValue}`;
                 if (this.isAdmin) {
                     this.showNotification(`${playerName} added locally to ${this.config.allianceName}`, 'info');
                 } else {
-                    this.showNotification(`${playerName} joined ${this.config.allianceName} as ${displayText} at ${timeValue}!`, 'success');
+                    this.showNotification(`${playerName} joined ${this.config.allianceName} with ${displayText} ${timeText}!`, 'success');
                 }
             }
             
@@ -981,21 +994,17 @@ class KingshotCore {
         combosByFirstPlayer.forEach(comboKey => {
             const players = playersByCombo[comboKey];
             const [marchLimit, timeSlot] = comboKey.split('_', 2);
-            let groupSize;
             let isNewGroup = false;
             
             // Extract original march limit (remove newgroup identifier if present)
             const originalMarchLimit = marchLimit.toString().split('_newgroup_')[0];
             
-            // Determine group size based on march type
-            if (originalMarchLimit === 'offline') {
-                groupSize = 4; // Offline players in 4-player groups
-            } else if (marchLimit.includes('_newgroup_')) {
+            // UPDATED: All players use their march limit as group size (no special offline treatment)
+            let groupSize = parseInt(originalMarchLimit);
+            
+            if (marchLimit.includes('_newgroup_')) {
                 // New groups created by drag & drop - use original march limit for size
-                groupSize = parseInt(originalMarchLimit);
                 isNewGroup = true;
-            } else {
-                groupSize = parseInt(marchLimit); // Group size matches march limit
             }
             
             // Split players into groups in order
@@ -1023,7 +1032,7 @@ class KingshotCore {
                     groupNumber: this.groups.length + 1,
                     maxSize: groupSize,
                     isFull: group.length === groupSize,
-                    isOffline: originalMarchLimit === 'offline',
+                    isOffline: timeSlot === 'offline', // UPDATED: Based on time slot, not march limit
                     isCustom: false,
                     groupType: groupType,
                     customName: customGroupName
@@ -1410,7 +1419,7 @@ class KingshotCore {
                 <div class="empty-state">
                     <h3>No ${this.config.allianceName} Players Registered</h3>
                     <p>Add players to automatically create groups!</p>
-                    <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
+                    <p>Choose march limit 1-6 and select your preferred time slot (including offline).</p>
                 </div>
             `;
         } else {
@@ -1438,7 +1447,7 @@ class KingshotCore {
                                     ` : ''}
                                 </div>
                                 <div class="time-badge" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; display: inline-block;">${group.timeSlot}</div>
-                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''} ${group.isCustom ? 'custom-badge' : ''}">${group.isOffline ? 'Offline' : group.isCustom ? 'Custom Group' : `${group.displayMarchLimit} march${group.displayMarchLimit > 1 ? 'es' : ''}`}</div>
+                                <div class="march-badge ${group.isOffline ? 'offline-badge' : ''} ${group.isCustom ? 'custom-badge' : ''}">${group.isOffline ? `Offline - ${group.displayMarchLimit} marches` : `${group.displayMarchLimit} march${group.displayMarchLimit > 1 ? 'es' : ''}`}</div>
                                 <div class="group-count">
                                     ${group.players.length}/${group.maxSize} players
                                     ${group.isFull ? '✅' : '⏳'}
@@ -1461,7 +1470,7 @@ class KingshotCore {
                                             
                                             <div class="player-info">
                                                 <span class="player-name">${player.name}</span>
-                                                <div class="player-march">${player.marchLimit.split('_newgroup_')[0] === 'offline' ? 'Offline player' : `${player.marchLimit.split('_newgroup_')[0]} march limit`}</div>
+                                                <div class="player-march">${player.marchLimit.split('_newgroup_')[0]} march limit</div>
                                                 <div class="player-time" style="color: rgba(255, 255, 255, 0.6); font-size: 0.75rem; margin-top: 2px;">${player.timeSlot || 'at all times'}</div>
                                             </div>
                                             
@@ -1500,7 +1509,7 @@ class KingshotCore {
                     <h3>⚠️ Offline Mode</h3>
                     <p>Firebase is not configured. Running in local mode.</p>
                     <p>Players added here won't be shared with others.</p>
-                    <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
+                    <p>March limit 1-6 create matching group sizes. Choose time slots including offline.</p>
                 </div>
             `;
             this.updateConnectionStatus(false, 'Running in offline mode');
@@ -1509,7 +1518,7 @@ class KingshotCore {
                 <div class="empty-state">
                     <h3>No ${this.config.allianceName} Players Registered</h3>
                     <p>Add players to automatically create groups!</p>
-                    <p>March limit 1-6 create matching group sizes. Offline players form 4-player groups.</p>
+                    <p>March limit 1-6 create matching group sizes. Choose your preferred time slot.</p>
                 </div>
             `;
             this.updateConnectionStatus(false, 'Loading...');
@@ -1525,13 +1534,20 @@ class KingshotCore {
         const timeSelect = document.getElementById('timeSelect');
         if (timeSelect) {
             timeSelect.disabled = false;
-            // Initialize with default option if empty
+            // Initialize with default options if empty - UPDATED: Include offline
             if (timeSelect.options.length === 0) {
-                const defaultOption = document.createElement('option');
-                defaultOption.value = 'at all times';
-                defaultOption.textContent = 'at all times';
-                defaultOption.selected = true;
-                timeSelect.appendChild(defaultOption);
+                const defaultOptions = [
+                    { value: 'at all times', text: 'at all times', selected: true },
+                    { value: 'offline', text: 'offline', selected: false }
+                ];
+                
+                defaultOptions.forEach(optionData => {
+                    const option = document.createElement('option');
+                    option.value = optionData.value;
+                    option.textContent = optionData.text;
+                    option.selected = optionData.selected;
+                    timeSelect.appendChild(option);
+                });
             }
         }
         
