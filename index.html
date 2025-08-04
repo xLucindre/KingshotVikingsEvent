@@ -907,11 +907,11 @@
             border-radius: 18px;
             backdrop-filter: blur(15px);
         background: linear-gradient(135deg, 
-            rgba(139, 69, 255, 0.8) 0%,
-            rgba(88, 28, 135, 0.9) 50%,
-            rgba(139, 69, 255, 0.8) 100%);
+            rgba(33, 150, 243, 0.8) 0%,
+            rgba(21, 101, 192, 0.9) 50%,
+            rgba(33, 150, 243, 0.8) 100%);
         box-shadow: 
-            0 4px 15px rgba(139, 69, 255, 0.4),
+            0 4px 15px rgba(33, 150, 243, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
             animation: crystalFlyAcross 18s linear infinite;
             display: flex;
@@ -965,6 +965,16 @@
 
         .flying-message-content.speed-slow { animation-duration: 25s; }
         .flying-message-content.speed-fast { animation-duration: 12s; }
+
+        .btn-primary.replace-mode {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            border: 2px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-primary.replace-mode:hover {
+            background: linear-gradient(45deg, #FB8C00, #E65100);
+            box-shadow: 0 8px 16px rgba(255, 152, 0, 0.4);
+        }
 
         @keyframes crystalFlyAcross {
             0% { 
@@ -2033,18 +2043,20 @@
                 deleteBtn.style.display = 'none';
                 createBtn.disabled = false;
                 createBtn.textContent = '✨ Create Message';
+                createBtn.classList.remove('replace-mode');
             } else {
                 display.innerHTML = `
                 <div style="color: white; font-weight: bold; text-align: center;">
-                    <div style="margin-bottom: 8px;"> ${currentFlyingMessage.text}</div>
+                    <div style="margin-bottom: 8px;">${currentFlyingMessage.text}</div>
                     <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.8rem;">
                         Color: ${currentFlyingMessage.color || 'blue'} | Speed: ${currentFlyingMessage.speed || 'normal'}
                     </div>
                 </div>
             `;
                 deleteBtn.style.display = 'block';
-                createBtn.disabled = true;
+                createBtn.disabled = false; // Button NICHT disablen
                 createBtn.textContent = '⚠️ Replace Current Message';
+                createBtn.classList.add('replace-mode'); // Visueller Hinweis
             }
         }
 
