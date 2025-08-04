@@ -882,6 +882,101 @@
             padding: 20px 0;
         }
 
+        /* ===== FLYING MESSAGE DISPLAY ===== */
+        .flying-message-display {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: visible;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .flying-message-content {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.5),
+                0 0 10px rgba(255, 255, 255, 0.3);
+            padding: 10px 25px;
+            border-radius: 18px;
+            backdrop-filter: blur(15px);
+        background: linear-gradient(135deg, 
+            rgba(139, 69, 255, 0.8) 0%,
+            rgba(88, 28, 135, 0.9) 50%,
+            rgba(139, 69, 255, 0.8) 100%);
+        box-shadow: 
+            0 4px 15px rgba(139, 69, 255, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: crystalFlyAcross 18s linear infinite;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.5px;
+            pointer-events: auto;
+            top: 90%;
+            transform: translateY(-50%);
+        }
+
+        .flying-message-content.color-blue {
+            background: linear-gradient(135deg, 
+                rgba(33, 150, 243, 0.8) 0%,
+                rgba(21, 101, 192, 0.9) 50%,
+                rgba(33, 150, 243, 0.8) 100%);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .flying-message-content.color-green {
+            background: linear-gradient(135deg, 
+                rgba(76, 175, 80, 0.8) 0%,
+                rgba(56, 142, 60, 0.9) 50%,
+                rgba(76, 175, 80, 0.8) 100%);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .flying-message-content.color-orange {
+            background: linear-gradient(135deg, 
+                rgba(255, 152, 0, 0.8) 0%,
+                rgba(245, 124, 0, 0.9) 50%,
+                rgba(255, 152, 0, 0.8) 100%);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .flying-message-content.color-red {
+            background: linear-gradient(135deg, 
+                rgba(244, 67, 54, 0.8) 0%,
+                rgba(211, 47, 47, 0.9) 50%,
+                rgba(244, 67, 54, 0.8) 100%);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .flying-message-content.color-purple {
+            background: linear-gradient(135deg, 
+                rgba(156, 39, 176, 0.8) 0%,
+                rgba(123, 31, 162, 0.9) 50%,
+                rgba(156, 39, 176, 0.8) 100%);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .flying-message-content.speed-slow { animation-duration: 25s; }
+        .flying-message-content.speed-fast { animation-duration: 12s; }
+
+        @keyframes crystalFlyAcross {
+            0% { 
+                transform: translateX(-100%) translateY(-50%); 
+                left: -10%; 
+            }
+            100% { 
+                transform: translateX(100%) translateY(-50%); 
+                left: 110%; 
+            }
+        }
+
         /* ===== RESPONSIVE DESIGN ===== */
         @media (max-width: 768px) {
             .container {
@@ -984,6 +1079,7 @@
                     <button class="admin-btn" onclick="adminLogout()">🚪 Logout</button>
                     <button class="admin-btn" onclick="manageContent()">📝 Manage Content</button>
                     <button class="admin-btn danger" onclick="clearAllPosts()">🗑️ Clear All Posts</button>
+                    <button class="admin-btn" onclick="openFlyingMessageModal()">📢 Flying Messages</button>
                 </div>
                 
                 <!-- Error messages -->
@@ -1004,9 +1100,15 @@
             
             <!-- Feature showcase -->
             <div class="feature-highlight">
-                <strong>🔥 New Features:</strong> Real-time synchronization, Admin drag & drop, Search functionality, Mobile optimized
+                <strong>🔥 New Features:</strong> Real-time synchronization, Admin drag & drop, Search functionality, Mobile
+                optimized
             </div>
+            
+            <!-- Flying Message (under features) -->
+            <div class="flying-message-display" id="flyingMessageDisplay" style="display: none;">
+                <!-- Single flying message will be inserted here -->      </div>
         </div>
+
 
         <!-- ===== ALLIANCE SELECTOR ===== -->
         <div class="alliance-selector">
@@ -1105,6 +1207,55 @@
         </div>
     </div>
 
+    <!-- ===== FLYING MESSAGE MODAL ===== -->
+    <div class="modal" id="flyingMessageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Flying Message</h2>
+                <button class="close-btn" onclick="closeFlyingMessageModal()">×</button>
+            </div>
+    
+            <div class="form-group" id="currentMessageGroup">
+                <label class="form-label">Current Flying Message</label>
+                <div id="currentMessageDisplay"
+                    style="padding: 15px; background: rgb(0, 0, 0); border-radius: 10px; margin-bottom: 15px; min-height: 50px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7); font-style: italic;">
+                    No message currently active
+                </div>
+                <button onclick="deleteFlyingMessage()" class="btn btn-secondary" id="deleteCurrentBtn"
+                    style="background: linear-gradient(45deg, #ff5722, #d84315); display: none; width: 100%; margin-bottom: 15px;">
+                    🗑️ Remove Current Message
+                </button>
+            </div>
+    
+            <div class="form-group" id="createMessageGroup">
+                <label class="form-label">Create New Message</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" class="form-input" id="flyingMessageText" placeholder="Enter your message..."
+                        style="flex: 1;" maxlength="150">
+                    <select class="form-input" id="flyingMessageColor" style="width: 120px;">
+                        <option value="blue" selected>💙 Blue</option>
+                        <option value="purple">💜 Purple</option>
+                        <option value="green">💚 Green</option>
+                        <option value="orange">🧡 Orange</option>
+                        <option value="red">❤️ Red</option>               
+                    </select>
+                    <select class="form-input" id="flyingMessageSpeed" style="width: 100px;">
+                        <option value="normal">Normal</option>
+                        <option value="slow">Slow</option>
+                        <option value="fast">Fast</option>
+                    </select>
+                </div>
+                <button onclick="createFlyingMessage()" class="btn btn-primary" style="width: 100%;" id="createMessageBtn">
+                    ✨ Create Message
+                </button>
+            </div>
+    
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeFlyingMessageModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== POST EDITOR MODAL ===== -->
     <div class="modal" id="postModal">
         <div class="modal-content">
@@ -1195,6 +1346,9 @@
         let draggedPostType = null;
         let currentDragTarget = null;
 
+        // Flying Message variable
+        let currentFlyingMessage = null;
+
         // ===== FIREBASE INITIALIZATION =====
         function initializeFirebase() {
             try {
@@ -1222,6 +1376,9 @@
                 
                 // Load and listen for posts
                 loadPosts();
+
+                // Load and listen for flying messages
+                loadFlyingMessages();
                 
             } catch (error) {
                 console.error('Firebase initialization error:', error);
@@ -1311,7 +1468,7 @@
             document.getElementById('adminControls').classList.add('show');
             document.getElementById('addGuideBtn').classList.add('show');
             document.getElementById('addInfoBtn').classList.add('show');
-            
+
             // Show admin controls on all posts
             const adminControls = document.querySelectorAll('.guide-admin-controls, .info-post-controls');
             adminControls.forEach(control => control.classList.add('show'));
@@ -1323,7 +1480,7 @@
             document.getElementById('adminControls').classList.remove('show');
             document.getElementById('addGuideBtn').classList.remove('show');
             document.getElementById('addInfoBtn').classList.remove('show');
-            
+
             // Hide admin controls on all posts
             const adminControls = document.querySelectorAll('.guide-admin-controls, .info-post-controls');
             adminControls.forEach(control => control.classList.remove('show'));
@@ -1822,6 +1979,136 @@
             }, 4000);
         }
 
+        // ===== FLYING MESSAGES MANAGEMENT =====
+        function loadFlyingMessages() {
+            const messageRef = database.ref('content/flyingMessage');
+            messageRef.on('value', (snapshot) => {
+                currentFlyingMessage = snapshot.val();
+                renderFlyingMessage();
+                refreshCurrentMessageDisplay();
+            });
+        }
+
+        function renderFlyingMessage() {
+            const display = document.getElementById('flyingMessageDisplay');
+
+            if (!currentFlyingMessage) {
+                display.style.display = 'none';
+                return;
+            }
+
+            display.style.display = 'flex';
+            display.innerHTML = `
+                <div class="flying-message-content color-${currentFlyingMessage.color || 'blue'} speed-${currentFlyingMessage.speed || 'normal'}">
+                    <span>${currentFlyingMessage.text}</span>
+                </div>
+                `;
+        }
+
+        function openFlyingMessageModal() {
+            if (!isAdmin) {
+                showNotification('Admin access required!', 'error');
+                return;
+            }
+
+            document.getElementById('flyingMessageModal').classList.add('show');
+            document.getElementById('flyingMessageText').value = '';
+            document.getElementById('flyingMessageColor').value = 'blue';
+            document.getElementById('flyingMessageSpeed').value = 'normal';
+            refreshCurrentMessageDisplay();
+            document.getElementById('flyingMessageText').focus();
+        }
+
+        function closeFlyingMessageModal() {
+            document.getElementById('flyingMessageModal').classList.remove('show');
+        }
+
+        function refreshCurrentMessageDisplay() {
+            const display = document.getElementById('currentMessageDisplay');
+            const deleteBtn = document.getElementById('deleteCurrentBtn');
+            const createBtn = document.getElementById('createMessageBtn');
+
+            if (!currentFlyingMessage) {
+                display.innerHTML = `<div style="text-align: center; color: rgba(255, 255, 255, 0.7); font-style: italic;">No message currently active</div>`;
+                deleteBtn.style.display = 'none';
+                createBtn.disabled = false;
+                createBtn.textContent = '✨ Create Message';
+            } else {
+                display.innerHTML = `
+                <div style="color: white; font-weight: bold; text-align: center;">
+                    <div style="margin-bottom: 8px;"> ${currentFlyingMessage.text}</div>
+                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.8rem;">
+                        Color: ${currentFlyingMessage.color || 'blue'} | Speed: ${currentFlyingMessage.speed || 'normal'}
+                    </div>
+                </div>
+            `;
+                deleteBtn.style.display = 'block';
+                createBtn.disabled = true;
+                createBtn.textContent = '⚠️ Replace Current Message';
+            }
+        }
+
+        async function createFlyingMessage() {
+            if (!isAdmin) return;
+
+            const text = document.getElementById('flyingMessageText').value.trim();
+            const color = document.getElementById('flyingMessageColor').value;
+            const speed = document.getElementById('flyingMessageSpeed').value;
+
+            if (!text) {
+                showNotification('Please enter a message text!', 'error');
+                return;
+            }
+
+            if (currentFlyingMessage) {
+                if (!confirm('This will replace the current flying message. Continue?')) {
+                    return;
+                }
+            }
+
+            try {
+                const messageData = {
+                    text: text,
+                    color: color,
+                    speed: speed,
+                    icon: getIconForColor(color),
+                    timestamp: Date.now(),
+                    author: currentUser.email
+                };
+
+                await database.ref('content/flyingMessage').set(messageData);
+                document.getElementById('flyingMessageText').value = '';
+                showNotification('Message created successfully! ✨', 'success');
+
+            } catch (error) {
+                console.error('Error creating flying message:', error);
+                showNotification('Failed to create message!', 'error');
+            }
+        }
+
+        async function deleteFlyingMessage() {
+            if (!isAdmin || !currentFlyingMessage) return;
+
+            try {
+                await database.ref('content/flyingMessage').remove();
+                showNotification('Message removed!', 'info');
+            } catch (error) {
+                console.error('Error deleting flying message:', error);
+                showNotification('Failed to delete message!', 'error');
+            }
+        }
+
+        function getIconForColor(color) {
+            const icons = {
+                'purple': '💜',
+                'green': '💚',
+                'orange': '🧡',
+                'red': '❤️',
+                'blue': '💙'
+            };
+            return icons[color];
+        }
+
         // ===== EVENT LISTENERS =====
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize Firebase
@@ -1920,6 +2207,19 @@
                     submitBtn.disabled = false;
                     spinner.classList.remove('show');
                     buttonText.textContent = 'Save Post';
+                }
+            });
+
+            // Flying message modal events hinzufügen:
+            document.getElementById('flyingMessageModal').addEventListener('click', (e) => {
+                if (e.target.id === 'flyingMessageModal') {
+                    closeFlyingMessageModal();
+                }
+            });
+
+            document.getElementById('flyingMessageText').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    createFlyingMessage();
                 }
             });
         });
