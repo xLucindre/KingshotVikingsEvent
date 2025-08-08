@@ -862,7 +862,7 @@ class KingshotCore {
 
         // Check if any admin group has space
         for (const [adminGroupId, groupPlayers] of Object.entries(adminGroupsWithSpace)) {
-            if (groupPlayers.length < parseInt(marchValue)) {
+            if (groupPlayers.length < parseInt(marchValue) + 1) {
                 // Join this admin group
                 targetTimestamp = groupPlayers[0].timestamp + Math.random() * 1000;
                 console.log(`📥 New player ${playerName} joining admin group ${adminGroupId} with ${groupPlayers.length} players`);
@@ -1167,7 +1167,7 @@ class KingshotCore {
                 displayMarchLimit: player.marchLimit,
                 groupNumber: this.groups.length + 1,
                 maxSize: groupSize,
-                isFull: groupPlayers.length === groupSize,
+                isFull: groupPlayers.length >= groupSize,
                 isOffline: player.timeSlot === 'offline',
                 isCustom: false,
                 groupType: 'normal',
