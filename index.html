@@ -2182,7 +2182,7 @@
             // Calculate total groups needed
             let totalGroups = 0;
             Object.entries(playersByMarchLimit).forEach(([marchLimit, players]) => {
-                const groupSize = marchLimit === 'offline' ? 4 : parseInt(marchLimit);
+                const groupSize = marchLimit === 'offline' ? 4 : parseInt(marchLimit) + 1;
                 totalGroups += Math.ceil(players.length / groupSize);
             });
 

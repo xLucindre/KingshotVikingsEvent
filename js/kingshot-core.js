@@ -1079,7 +1079,7 @@ class KingshotCore {
             // Sort by timestamp within admin group
             groupPlayers.sort((a, b) => a.timestamp - b.timestamp);
             
-            const groupSize = parseInt(groupPlayers[0].marchLimit);
+            const groupSize = parseInt(groupPlayers[0].marchLimit) + 1;
             
             // Check if any player has a custom group name
             let customGroupName = null;
@@ -1110,7 +1110,7 @@ class KingshotCore {
         allPlayers.forEach(player => {
             if (processedPlayers.has(player.name)) return;
             
-            const groupSize = parseInt(player.marchLimit);
+            const groupSize = parseInt(player.marchLimit) + 1;
             
             // Find other players with same tags
             const candidatePlayers = allPlayers.filter(otherPlayer => {
