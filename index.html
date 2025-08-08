@@ -1593,7 +1593,7 @@
 
     <script>
         // ===== FIREBASE CONFIGURATION =====
-        const firebaseConfig = {
+        const FIREBASE_CONFIG = {
             apiKey: "AIzaSyBKHPSmLcbyZ8xItGLHZA-nEMB5E3joczw",
             authDomain: "kingshot-vikings-event.firebaseapp.com",
             databaseURL: "https://kingshot-vikings-event-default-rtdb.europe-west1.firebasedatabase.app",
@@ -1601,6 +1601,12 @@
             storageBucket: "kingshot-vikings-event.firebasestorage.app",
             messagingSenderId: "308452962352",
             appId: "1:308452962352:web:e18535f956c3386c033df5"
+        };
+
+        // ===== APPLICATION CONSTANTS =====
+        const APP_CONSTANTS = {
+            NOTIFICATION_DURATION: 4000,
+            DEFAULT_ALLIANCES: ['COB', 'LUX', 'GEW']
         };
 
         // ===== GLOBAL VARIABLES =====
@@ -1621,7 +1627,7 @@
         // ===== FIREBASE INITIALIZATION =====
         function initializeFirebase() {
             try {
-                firebase.initializeApp(firebaseConfig);
+                firebase.initializeApp(FIREBASE_CONFIG);
                 database = firebase.database();
                 auth = firebase.auth();
 
@@ -2152,9 +2158,7 @@
 
         // ===== ALLIANCE STATISTICS =====
         function loadAllianceStats() {
-            const alliances = ['COB', 'LUX', 'GEW'];
-
-            alliances.forEach(alliance => {
+            APP_CONSTANTS.DEFAULT_ALLIANCES.forEach(alliance => {
                 const ref = database.ref(`event/alliances/${alliance}/players`);
 
                 ref.on('value', (snapshot) => {
@@ -2214,10 +2218,10 @@
             notification.className = `notification ${type}`;
             notification.classList.add('show');
 
-            // Auto-hide after 4 seconds
+            // Auto-hide after configured duration
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 4000);
+            }, APP_CONSTANTS.NOTIFICATION_DURATION);
         }
 
         // ===== FLYING MESSAGES MANAGEMENT =====

@@ -3,21 +3,52 @@
  * Shared functionality for all alliances
  */
 
+// Constants
+const CONSTANTS = {
+    DEFAULT_TIME_SLOTS: ['at all times', 'offline'],
+    GROUP_TIME_THRESHOLD: 10000, // 10 seconds in milliseconds
+    MAX_MARCH_LIMIT: 6,
+    MIN_MARCH_LIMIT: 1,
+    NOTIFICATION_DURATION: 4000,
+    DEFAULT_ALLIANCE: 'COB',
+    DEFAULT_EMOJI: '🔥',
+    DEFAULT_COLORS: {
+        primary: 'linear-gradient(90deg, #FF6B6B, #FF8E53)',
+        badge: 'linear-gradient(45deg, #FF6B6B, #FF8E53)',
+        group: 'linear-gradient(90deg, #FF6B6B, #FF8E53)'
+    }
+};
+
+// CSS Classes
+const CSS_CLASSES = {
+    DRAGGING: 'dragging',
+    ADMIN: 'admin',
+    OFFLINE_GROUP: 'offline-group',
+    SEARCH_MATCH: 'search-match',
+    HAS_SEARCH_MATCH: 'has-search-match',
+    SHOW: 'show'
+};
+
 class KingshotCore {
     constructor(config) {
-        // Alliance-specific configuration
-        this.config = {
-            allianceName: config.allianceName || 'COB',
-            colors: config.colors || {
-                primary: 'linear-gradient(90deg, #FF6B6B, #FF8E53)',
-                badge: 'linear-gradient(45deg, #FF6B6B, #FF8E53)',
-                group: 'linear-gradient(90deg, #FF6B6B, #FF8E53)'
-            },
-            emoji: config.emoji || '🔥',
+        this.config = this._initializeConfig(config);
+        this._initializeState();
+        this._initializeFirebase();
+        this._setupEventListeners();
+        this._applyAllianceStyles();
+    }
+
+    _initializeConfig(config) {
+        return {
+            allianceName: config.allianceName || CONSTANTS.DEFAULT_ALLIANCE,
+            colors: config.colors || CONSTANTS.DEFAULT_COLORS,
+            emoji: config.emoji || CONSTANTS.DEFAULT_EMOJI,
             firebaseConfig: config.firebaseConfig,
             ...config
         };
+    }
 
+    _initializeState() {
         // Firebase variables
         this.database = null;
         this.auth = null;
@@ -33,15 +64,10 @@ class KingshotCore {
         this.currentPlayerName = '';
         this.currentAdminUser = null;
         this.currentSearchTerm = '';
-
-        // Initialize
-        this.initializeFirebase();
-        this.setupEventListeners();
-        this.applyAllianceStyles();
     }
 
     // Apply alliance-specific styles
-    applyAllianceStyles() {
+    _applyAllianceStyles() {
         const style = document.createElement('style');
         style.textContent = `
             .header::before { 
@@ -110,7 +136,7 @@ class KingshotCore {
     }
 
     // Firebase initialization
-    async initializeFirebase() {
+    async _initializeFirebase() {
         try {
             console.log(`Initializing Firebase for ${this.config.allianceName}...`);
             firebase.initializeApp(this.config.firebaseConfig);
@@ -157,7 +183,7 @@ class KingshotCore {
             this.timeSlotsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 // Default time slots now include offline as a standard option
-                this.timeSlots = data ? Object.values(data) : ['at all times', 'offline'];
+                this.timeSlots = data ? Object.values(data) : [...CONSTANTS.DEFAULT_TIME_SLOTS];
                 // Use setTimeout to ensure DOM is ready
                 setTimeout(() => {
                     this.updateTimeSlotDropdown();
@@ -460,44 +486,12 @@ class KingshotCore {
         }
         
         try {
-            // Include offline as a default time slot
-            const defaultTimeSlots = ['at all times', 'offline'];
+            const defaultTimeSlots = [...CONSTANTS.DEFAULT_TIME_SLOTS];
             
             if (this.isConnected && this.timeSlotsRef) {
-                // Save to Firebase
-                const timeSlotData = {
-                    'slot_0': 'at all times',
-                    'slot_1': 'offline'
-                };
-                
-                await this.timeSlotsRef.set(timeSlotData);
-                
-                // Update all players to appropriate time slots
-                const playersToUpdate = {};
-                Object.keys(this.localPlayers).forEach(playerName => {
-                    const currentTimeSlot = this.localPlayers[playerName].timeSlot;
-                    // Keep offline players offline, others go to 'at all times'
-                    if (currentTimeSlot !== 'offline' && currentTimeSlot !== 'at all times') {
-                        playersToUpdate[`${playerName}/timeSlot`] = 'at all times';
-                    }
-                });
-                
-                if (Object.keys(playersToUpdate).length > 0) {
-                    await this.playersRef.update(playersToUpdate);
-                }
+                await this._resetTimeSlotsInFirebase(defaultTimeSlots);
             } else {
-                // Update locally
-                this.timeSlots = defaultTimeSlots;
-                
-                Object.keys(this.localPlayers).forEach(playerName => {
-                    const currentTimeSlot = this.localPlayers[playerName].timeSlot;
-                    if (currentTimeSlot !== 'offline' && currentTimeSlot !== 'at all times') {
-                        this.localPlayers[playerName].timeSlot = 'at all times';
-                    }
-                });
-                
-                this.updateTimeSlotDropdown();
-                this.reorganizeGroups();
+                await this._resetTimeSlotsLocally(defaultTimeSlots);
             }
             
             this.refreshTimeSlotsList();
@@ -507,6 +501,45 @@ class KingshotCore {
             console.error('Error resetting time slots:', error);
             this.showNotification('Failed to reset time slots!', 'error');
         }
+    }
+
+    async _resetTimeSlotsInFirebase(defaultTimeSlots) {
+        const timeSlotData = {};
+        defaultTimeSlots.forEach((slot, index) => {
+            timeSlotData[`slot_${index}`] = slot;
+        });
+        
+        await this.timeSlotsRef.set(timeSlotData);
+        
+        const playersToUpdate = this._getPlayersToUpdateForDefaultTimeSlots();
+        if (Object.keys(playersToUpdate).length > 0) {
+            await this.playersRef.update(playersToUpdate);
+        }
+    }
+
+    async _resetTimeSlotsLocally(defaultTimeSlots) {
+        this.timeSlots = defaultTimeSlots;
+        
+        Object.keys(this.localPlayers).forEach(playerName => {
+            const currentTimeSlot = this.localPlayers[playerName].timeSlot;
+            if (!CONSTANTS.DEFAULT_TIME_SLOTS.includes(currentTimeSlot)) {
+                this.localPlayers[playerName].timeSlot = 'at all times';
+            }
+        });
+        
+        this.updateTimeSlotDropdown();
+        this.reorganizeGroups();
+    }
+
+    _getPlayersToUpdateForDefaultTimeSlots() {
+        const playersToUpdate = {};
+        Object.keys(this.localPlayers).forEach(playerName => {
+            const currentTimeSlot = this.localPlayers[playerName].timeSlot;
+            if (!CONSTANTS.DEFAULT_TIME_SLOTS.includes(currentTimeSlot)) {
+                playersToUpdate[`${playerName}/timeSlot`] = 'at all times';
+            }
+        });
+        return playersToUpdate;
     }
 
     refreshTimeSlotsList() {
@@ -1824,26 +1857,33 @@ class KingshotCore {
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notificationText');
         
-        notificationText.textContent = message;
-        
-        // Color based on type
-        if (type === 'error') {
-            notification.style.background = 'rgba(244, 67, 54, 0.9)';
-        } else if (type === 'info') {
-            notification.style.background = 'rgba(33, 150, 243, 0.9)';
-        } else {
-            notification.style.background = 'rgba(76, 175, 80, 0.9)';
+        if (!notification || !notificationText) {
+            console.warn('Notification elements not found');
+            return;
         }
         
-        notification.classList.add('show');
+        notificationText.textContent = message;
+        this._setNotificationStyle(notification, type);
+        
+        notification.classList.add(CSS_CLASSES.SHOW);
         
         setTimeout(() => {
-            notification.classList.remove('show');
-        }, 4000);
+            notification.classList.remove(CSS_CLASSES.SHOW);
+        }, CONSTANTS.NOTIFICATION_DURATION);
+    }
+
+    _setNotificationStyle(notification, type) {
+        const colors = {
+            error: 'rgba(244, 67, 54, 0.9)',
+            info: 'rgba(33, 150, 243, 0.9)',
+            success: 'rgba(76, 175, 80, 0.9)'
+        };
+        
+        notification.style.background = colors[type] || colors.success;
     }
 
     // Event listeners setup
-    setupEventListeners() {
+    _setupEventListeners() {
         document.addEventListener('DOMContentLoaded', () => {
             console.log(`DOM loaded, initializing ${this.config.allianceName} alliance...`);
             
