@@ -58,6 +58,7 @@ class KingshotCore {
 
         // State variables
         this.localPlayers = {};
+        this.allPlayersData = {}; // Store all player data including deleted ones
         this.groups = [];
         this.timeSlots = [];
         this.isAdmin = false;
@@ -174,7 +175,19 @@ class KingshotCore {
             // Listen for player changes
             this.playersRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                this.localPlayers = data || {};
+                // Store all data (including deleted players) for recovery purposes
+                this.allPlayersData = data || {};
+                
+                // Filter out deleted players for normal display
+                this.localPlayers = {};
+                if (data) {
+                    Object.entries(data).forEach(([playerName, playerData]) => {
+                        if (!playerData.deleted) {
+                            this.localPlayers[playerName] = playerData;
+                        }
+                    });
+                }
+                
                 this.reorganizeGroups();
                 this.updateOnlineCount();
             });
@@ -969,11 +982,13 @@ class KingshotCore {
                 this.showNotification(`${playerName} joined ${this.config.allianceName} with ${displayText} ${timeText}!`, 'success');
             } else {
                 // Fallback to local mode
-                this.localPlayers[playerName] = {
+                const playerData = {
                     marchLimit: marchValue,
                     timeSlot: timeValue,
                     timestamp: targetTimestamp
                 };
+                this.localPlayers[playerName] = playerData;
+                this.allPlayersData[playerName] = playerData; // Keep in sync
                 this.currentPlayerName = playerName;
                 this.reorganizeGroups();
                 
@@ -998,7 +1013,12 @@ class KingshotCore {
     async removePlayer(playerName) {
         try {
             if (this.isConnected && this.playersRef) {
-                await this.playersRef.child(playerName).remove();
+                // Soft delete: mark as deleted instead of removing
+                await this.playersRef.child(playerName).update({
+                    deleted: true,
+                    deletedAt: Date.now(),
+                    deletedBy: this.isAdmin ? 'admin' : 'user'
+                });
                 
                 if (playerName === this.currentPlayerName) {
                     this.currentPlayerName = '';
@@ -1006,8 +1026,19 @@ class KingshotCore {
                 
                 this.showNotification(`${playerName} left ${this.config.allianceName}`, 'info');
             } else {
-                // Fallback to local mode
-                delete this.localPlayers[playerName];
+                // Fallback to local mode - soft delete
+                if (this.localPlayers[playerName]) {
+                    // Mark as deleted in allPlayersData
+                    if (!this.allPlayersData[playerName]) {
+                        this.allPlayersData[playerName] = this.localPlayers[playerName];
+                    }
+                    this.allPlayersData[playerName].deleted = true;
+                    this.allPlayersData[playerName].deletedAt = Date.now();
+                    this.allPlayersData[playerName].deletedBy = this.isAdmin ? 'admin' : 'user';
+                    
+                    // Remove from display data
+                    delete this.localPlayers[playerName];
+                }
                 
                 if (playerName === this.currentPlayerName) {
                     this.currentPlayerName = '';
@@ -1049,6 +1080,7 @@ class KingshotCore {
                 this.showNotification(`All ${this.config.allianceName} players removed`, 'info');
             } else {
                 this.localPlayers = {};
+                this.allPlayersData = {}; // Also clear recovery data
                 this.currentPlayerName = '';
                 this.reorganizeGroups();
                 
@@ -1072,6 +1104,8 @@ class KingshotCore {
         const allPlayers = [];
         
         Object.entries(this.localPlayers).forEach(([playerName, playerData]) => {
+            // Skip deleted players
+            if (playerData.deleted) return;
             // Use original tags always (no modifications)
             const marchLimit = playerData.marchLimit.toString().split('_newgroup_')[0]; // Clean legacy data
             const timeSlot = playerData.timeSlot || 'at all times';
@@ -1286,6 +1320,352 @@ class KingshotCore {
                 document.getElementById('adminEmail').focus();
             }
         }
+    }
+
+    // Recovery functionality for deleted players
+    async getDeletedPlayers() {
+        const deletedPlayers = [];
+        const sourceData = this.allPlayersData || this.localPlayers;
+        Object.entries(sourceData).forEach(([playerName, playerData]) => {
+            if (playerData.deleted) {
+                deletedPlayers.push({
+                    name: playerName,
+                    data: playerData,
+                    deletedAt: new Date(playerData.deletedAt).toLocaleString('de-DE'),
+                    deletedBy: playerData.deletedBy || 'unknown'
+                });
+            }
+        });
+        return deletedPlayers.sort((a, b) => b.data.deletedAt - a.data.deletedAt);
+    }
+
+    async restorePlayer(playerName) {
+        if (!this.isAdmin) {
+            this.showNotification('Only admins can restore players', 'error');
+            return;
+        }
+
+        try {
+            if (this.isConnected && this.playersRef) {
+                // Remove deletion markers from Firebase
+                await this.playersRef.child(playerName).update({
+                    deleted: null,
+                    deletedAt: null,
+                    deletedBy: null,
+                    restoredAt: Date.now(),
+                    restoredBy: 'admin'
+                });
+            } else {
+                // Local restore - work with allPlayersData if available
+                const sourceData = this.allPlayersData || this.localPlayers;
+                if (sourceData[playerName]) {
+                    delete sourceData[playerName].deleted;
+                    delete sourceData[playerName].deletedAt;
+                    delete sourceData[playerName].deletedBy;
+                    sourceData[playerName].restoredAt = Date.now();
+                    sourceData[playerName].restoredBy = 'admin';
+                    
+                    // Also restore to localPlayers for immediate display
+                    this.localPlayers[playerName] = sourceData[playerName];
+                }
+            }
+            
+            this.reorganizeGroups();
+            this.showNotification(`${playerName} restored successfully`, 'success');
+        } catch (error) {
+            console.error('Error restoring player:', error);
+            this.showNotification('Failed to restore player', 'error');
+        }
+    }
+
+    async permanentlyDeletePlayer(playerName) {
+        if (!this.isAdmin) {
+            this.showNotification('Only admins can permanently delete players', 'error');
+            return;
+        }
+
+        if (!confirm(`Permanently delete ${playerName}? This cannot be undone!`)) {
+            return;
+        }
+
+        try {
+            if (this.isConnected && this.playersRef) {
+                await this.playersRef.child(playerName).remove();
+            } else {
+                // Local permanent delete - work with allPlayersData if available
+                const sourceData = this.allPlayersData || this.localPlayers;
+                delete sourceData[playerName];
+                delete this.localPlayers[playerName]; // Also remove from display data
+            }
+            
+            this.showNotification(`${playerName} permanently deleted`, 'info');
+        } catch (error) {
+            console.error('Error permanently deleting player:', error);
+            this.showNotification('Failed to permanently delete player', 'error');
+        }
+    }
+
+    async showRecoveryModal() {
+        if (!this.isAdmin) {
+            this.showNotification('Only admins can access recovery', 'error');
+            return;
+        }
+
+        const deletedPlayers = await this.getDeletedPlayers();
+        
+        if (deletedPlayers.length === 0) {
+            this.showNotification('No deleted players to recover', 'info');
+            return;
+        }
+
+        const modalHTML = `
+            <div id="recoveryModal" class="recovery-modal">
+                <div class="recovery-modal-content">
+                    <div class="recovery-modal-header">
+                        <h2>🔄 Player Recovery</h2>
+                        <button class="close-btn" onclick="closeRecoveryModal()">×</button>
+                    </div>
+                    
+                    <div class="recovery-info" style="text-align: center; margin-bottom: 20px; color: #666; font-size: 1.1em;">
+                        ${deletedPlayers.length} deleted player${deletedPlayers.length > 1 ? 's' : ''} found
+                    </div>
+                    
+                    <div class="deleted-players-section" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                        ${deletedPlayers.map(player => `
+                            <div class="deleted-player-item" style="
+                                background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+                                border: 1px solid #ffcccb;
+                                border-left: 4px solid #f44336;
+                                padding: 15px;
+                                margin-bottom: 12px;
+                                border-radius: 8px;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(244, 67, 54, 0.2)'"
+                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0; color: #333; font-size: 1.1em;">${player.name}</h4>
+                                    <p style="margin: 0 0 3px 0; font-size: 0.9em; color: #666;">
+                                        March Limit: <strong>${player.data.marchLimit}</strong> | 
+                                        Time: <strong>${player.data.timeSlot || 'at all times'}</strong>
+                                    </p>
+                                    <p style="margin: 0; font-size: 0.8em; color: #999;">
+                                        Deleted: ${player.deletedAt} by ${player.deletedBy}
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                    <button onclick="kingshot.restorePlayer('${player.name}'); closeRecoveryModal();" 
+                                        class="restore-btn" style="
+                                            background: linear-gradient(45deg, #4CAF50, #45a049);
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 12px;
+                                            border-radius: 6px;
+                                            cursor: pointer;
+                                            font-size: 0.9em;
+                                            transition: all 0.3s ease;
+                                        ">
+                                        ✅ Restore
+                                    </button>
+                                    <button onclick="if(confirm('Permanently delete ${player.name}? This cannot be undone!')) { kingshot.permanentlyDeletePlayer('${player.name}'); this.closest('.deleted-player-item').remove(); }" 
+                                        class="delete-btn" style="
+                                            background: linear-gradient(45deg, #f44336, #d32f2f);
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 12px;
+                                            border-radius: 6px;
+                                            cursor: pointer;
+                                            font-size: 0.9em;
+                                            transition: all 0.3s ease;
+                                        ">
+                                        🗑️ Delete
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="recovery-actions" style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 2px solid #eee;">
+                        <button onclick="if(confirm('This will permanently delete all players deleted over 30 days ago. Continue?')) { kingshot.cleanupOldDeletedPlayers(); }" 
+                            class="cleanup-btn" style="
+                                background: linear-gradient(45deg, #FF9800, #F57C00);
+                                color: white;
+                                border: none;
+                                padding: 10px 15px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: bold;
+                                transition: all 0.3s ease;
+                            ">
+                            🧹 Cleanup Old (30+ days)
+                        </button>
+                        <button onclick="closeRecoveryModal()" 
+                            class="close-modal-btn" style="
+                                background: linear-gradient(45deg, #6c757d, #5a6268);
+                                color: white;
+                                border: none;
+                                padding: 10px 15px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: bold;
+                                transition: all 0.3s ease;
+                            ">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing recovery modal
+        const existingModal = document.getElementById('recoveryModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Ensure modal styles are loaded
+        this.addRecoveryModalStyles();
+        
+        // Show modal
+        document.getElementById('recoveryModal').style.display = 'flex';
+    }
+
+    closeRecoveryModal() {
+        const modal = document.getElementById('recoveryModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    async cleanupOldDeletedPlayers() {
+        if (!this.isAdmin) {
+            this.showNotification('Only admins can cleanup deleted players', 'error');
+            return;
+        }
+
+        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        const oldDeletedPlayers = [];
+        const sourceData = this.allPlayersData || this.localPlayers;
+        
+        Object.entries(sourceData).forEach(([playerName, playerData]) => {
+            if (playerData.deleted && playerData.deletedAt < thirtyDaysAgo) {
+                oldDeletedPlayers.push(playerName);
+            }
+        });
+
+        if (oldDeletedPlayers.length === 0) {
+            this.showNotification('No old deleted players to cleanup', 'info');
+            return;
+        }
+
+        if (!confirm(`Permanently delete ${oldDeletedPlayers.length} player(s) deleted over 30 days ago? This cannot be undone!`)) {
+            return;
+        }
+
+        try {
+            for (const playerName of oldDeletedPlayers) {
+                if (this.isConnected && this.playersRef) {
+                    await this.playersRef.child(playerName).remove();
+                } else {
+                    // Local cleanup - work with allPlayersData if available
+                    const sourceData = this.allPlayersData || this.localPlayers;
+                    delete sourceData[playerName];
+                    delete this.localPlayers[playerName]; // Also remove from display data
+                }
+            }
+            
+            this.showNotification(`${oldDeletedPlayers.length} old player(s) permanently deleted`, 'info');
+        } catch (error) {
+            console.error('Error cleaning up old deleted players:', error);
+            this.showNotification('Failed to cleanup old deleted players', 'error');
+        }
+    }
+
+    addRecoveryModalStyles() {
+        // Check if styles are already loaded
+        if (document.getElementById('recoveryModalStyles')) {
+            return;
+        }
+        
+        const style = document.createElement('style');
+        style.id = 'recoveryModalStyles';
+        style.textContent = `
+            .recovery-modal {
+                display: none;
+                position: fixed;
+                z-index: 2000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .recovery-modal-content {
+                backdrop-filter: blur(20px);
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 800px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                color: #333;
+            }
+            
+            .recovery-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                border-bottom: 2px solid #eee;
+                padding-bottom: 15px;
+            }
+            
+            .recovery-modal-header h2 {
+                color: #333;
+                margin: 0;
+                font-size: 1.5rem;
+            }
+            
+            .recovery-modal .close-btn {
+                background: none;
+                border: none;
+                font-size: 2rem;
+                cursor: pointer;
+                color: #999;
+                padding: 0;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+            
+            .recovery-modal .close-btn:hover {
+                background: rgba(0, 0, 0, 0.1);
+                color: #333;
+            }
+            
+            @media (max-width: 768px) {
+                .recovery-modal-content {
+                    width: 95%;
+                    padding: 20px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     // Drag & Drop functionality
@@ -1823,6 +2203,12 @@ class KingshotCore {
             timeSlotBtn.style.display = 'block';
         }
         
+        // Show recovery button for admins
+        const recoveryBtn = document.getElementById('recoveryBtn');
+        if (recoveryBtn) {
+            recoveryBtn.style.display = 'block';
+        }
+        
         if (this.currentAdminUser) {
             const adminEmail = this.currentAdminUser.email;
             const displayEmail = adminEmail.length > 20 ? adminEmail.substring(0, 17) + '...' : adminEmail;
@@ -1841,6 +2227,12 @@ class KingshotCore {
         const timeSlotBtn = document.getElementById('timeSlotBtn');
         if (timeSlotBtn) {
             timeSlotBtn.style.display = 'none';
+        }
+        
+        // Hide recovery button for non-admins
+        const recoveryBtn = document.getElementById('recoveryBtn');
+        if (recoveryBtn) {
+            recoveryBtn.style.display = 'none';
         }
     }
 
@@ -2020,5 +2412,11 @@ function showTimeSlotManager() {
 function closeTimeSlotModal() {
     if (kingshot && kingshot.closeTimeSlotModal) {
         kingshot.closeTimeSlotModal();
+    }
+}
+
+function closeRecoveryModal() {
+    if (kingshot && kingshot.closeRecoveryModal) {
+        kingshot.closeRecoveryModal();
     }
 }

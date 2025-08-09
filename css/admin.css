@@ -302,6 +302,15 @@
     box-shadow: 0 15px 30px rgba(156, 39, 176, 0.6);
 }
 
+.floating-action.recovery {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    box-shadow: 0 10px 20px rgba(76, 175, 80, 0.4);
+}
+
+.floating-action.recovery:hover:not(:disabled) {
+    box-shadow: 0 15px 30px rgba(76, 175, 80, 0.6);
+}
+
 /* ===== DRAG HANDLE ===== */
 .drag-handle {
     color: rgba(255, 255, 255, 0.6);
