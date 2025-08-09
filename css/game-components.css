@@ -1,0 +1,438 @@
+/* ===== GAME-SPECIFIC COMPONENTS ===== */
+
+/* ===== HEADER SECTION ===== */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+}
+
+.header h1 {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #fff, #e0e0e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.header-logo {
+    height: 50px;
+    width: auto;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    transition: all 0.3s ease;
+}
+
+.header-logo:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* ===== ALLIANCE BADGE ===== */
+.alliance-badge {
+    background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 15px 0;
+    display: inline-block;
+    box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
+}
+
+/* ===== GROUPS CONTAINER ===== */
+.groups-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.group {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 25px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+}
+
+.group.offline-group {
+    border: 2px solid rgba(108, 117, 125, 0.5);
+    background: rgba(108, 117, 125, 0.05);
+}
+
+.group.offline-group::before {
+    background: linear-gradient(90deg, #6c757d, #495057);
+}
+
+.group.waiting {
+    border: 2px dashed rgba(255, 152, 0, 0.5);
+    background: rgba(255, 152, 0, 0.05);
+}
+
+.group.waiting::before {
+    background: linear-gradient(90deg, #FF9800, #FFC107);
+}
+
+.group:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.group.has-search-match {
+    border-color: rgba(33, 150, 243, 0.6);
+    background: rgba(33, 150, 243, 0.05);
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(33, 150, 243, 0.2);
+}
+
+.group.has-search-match::before {
+    background: linear-gradient(90deg, #2196F3, #1976D2);
+}
+
+/* ===== GROUP HEADER ===== */
+.group-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.group-title {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.group-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.group-title-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* ===== BADGES ===== */
+.march-badge {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-top: 8px;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+}
+
+.march-badge.offline-badge {
+    background: linear-gradient(45deg, #6c757d, #495057);
+    color: white;
+}
+
+.time-badge {
+    background: linear-gradient(45deg, #9C27B0, #673AB7);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+/* ===== PLAYER LIST ===== */
+.player-list {
+    list-style: none;
+}
+
+.player-item {
+    background: rgba(255, 255, 255, 0.15);
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.player-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+}
+
+.player-item.highlight {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.5);
+    animation: highlight 2s ease-out;
+}
+
+.player-item.search-match {
+    background: rgba(33, 150, 243, 0.3);
+    border-color: rgba(33, 150, 243, 0.6);
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
+}
+
+.player-item.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.player-info {
+    flex: 1;
+}
+
+.player-name {
+    color: white;
+    font-weight: 500;
+    display: block;
+}
+
+.player-march {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.player-time {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+/* ===== CLEAR SEARCH BUTTON ===== */
+.clear-search-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(244, 67, 54, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.clear-search-btn:hover {
+    background: rgba(244, 67, 54, 1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* ===== FORM ELEMENTS ===== */
+.march-select {
+    padding: 15px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.march-select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.march-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.march-select option {
+    background: #333;
+    color: white;
+}
+
+/* ===== STATES ===== */
+.empty-state {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.loading-state {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 40px 20px;
+}
+
+.loading-spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+/* ===== STATISTICS ===== */
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 15px 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    min-width: 120px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    display: block;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.online-count {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+/* ===== NOTIFICATION ===== */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+    z-index: 1001;
+    max-width: 300px;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* ===== DROP ZONES FOR DRAG AND DROP ===== */
+.drop-zone {
+    min-height: 50px;
+    border: 2px dashed transparent;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px 0;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    border-color: rgba(33, 150, 243, 0.6);
+    background: rgba(33, 150, 243, 0.1);
+}
+
+.drop-zone.admin-drop {
+    border-color: rgba(255, 152, 0, 0.6);
+    background: rgba(255, 152, 0, 0.1);
+}
+
+/* ===== SELECT ELEMENTS ===== */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+/* ===== SEPARATORS ===== */
+hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 20px 0;
+}

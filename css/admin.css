@@ -1,0 +1,373 @@
+/* ===== ADMIN-SPECIFIC STYLES ===== */
+
+/* ===== ADMIN TOGGLE BUTTON ===== */
+.admin-toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.admin-toggle-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
+}
+
+/* ===== ADMIN SECTION ===== */
+.admin-section {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    backdrop-filter: blur(20px);
+    background: rgba(255, 193, 7, 0.95);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    padding: 20px;
+    min-width: 300px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    display: none;
+    z-index: 20;
+}
+
+.admin-section.show {
+    display: block;
+}
+
+.admin-section h3 {
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.admin-login {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-form-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.admin-login input {
+    padding: 10px 15px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.9rem;
+    min-width: 200px;
+    transition: all 0.3s ease;
+}
+
+.admin-login input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-login input:focus {
+    outline: none;
+    border-color: rgba(255, 193, 7, 0.8);
+    transform: translateY(-2px);
+}
+
+.admin-login button {
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.admin-login button:hover {
+    transform: translateY(-2px);
+}
+
+.admin-login button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== ADMIN CONTROLS ===== */
+.admin-controls {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.admin-controls.show {
+    display: flex;
+}
+
+.admin-btn {
+    padding: 10px 15px;
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.admin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+}
+
+.admin-btn.danger {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+}
+
+/* ===== ADMIN STATUS ===== */
+.admin-status {
+    color: #4CAF50;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-bottom: 10px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.admin-status.active {
+    display: flex;
+}
+
+.admin-status::before {
+    content: '👑';
+}
+
+.admin-user {
+    background: rgba(76, 175, 80, 0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+/* ===== ADMIN ADD BUTTONS FOR SECTIONS ===== */
+.section-title .admin-add-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    transition: all 0.3s ease;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    -webkit-text-fill-color: white;
+    background-clip: border-box;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.section-title .admin-add-btn.show {
+    display: inline-flex;
+}
+
+.section-title .admin-add-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== ADMIN CONTROLS FOR CARDS ===== */
+.guide-admin-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: none;
+    gap: 5px;
+    z-index: 10;
+}
+
+.guide-admin-controls.show {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.guide-admin-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.guide-admin-btn:hover {
+    transform: scale(1.1);
+}
+
+.guide-admin-btn.edit {
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+}
+
+.guide-admin-btn.delete {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+}
+
+/* ===== FLOATING ACTIONS ===== */
+.floating-actions {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.floating-action {
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 20px rgba(33, 150, 243, 0.4);
+    transition: all 0.3s ease;
+}
+
+.floating-action:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(33, 150, 243, 0.6);
+}
+
+.floating-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.floating-action.clear {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+    box-shadow: 0 10px 20px rgba(244, 67, 54, 0.4);
+}
+
+.floating-action.clear:hover:not(:disabled) {
+    box-shadow: 0 15px 30px rgba(244, 67, 54, 0.6);
+}
+
+.floating-action.admin-toggle {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    box-shadow: 0 10px 20px rgba(255, 152, 0, 0.4);
+}
+
+.floating-action.admin-toggle:hover:not(:disabled) {
+    box-shadow: 0 15px 30px rgba(255, 152, 0, 0.6);
+}
+
+.floating-action.time-slot {
+    background: linear-gradient(45deg, #9C27B0, #673AB7);
+    box-shadow: 0 10px 20px rgba(156, 39, 176, 0.4);
+}
+
+.floating-action.time-slot:hover:not(:disabled) {
+    box-shadow: 0 15px 30px rgba(156, 39, 176, 0.6);
+}
+
+/* ===== DRAG HANDLE ===== */
+.drag-handle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    cursor: grab;
+    padding: 5px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    line-height: 1;
+    margin-right: 5px;
+}
+
+.drag-handle:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* ===== RENAME BUTTONS ===== */
+.rename-btn,
+.reset-name-btn {
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.rename-btn:hover,
+.reset-name-btn:hover {
+    opacity: 1 !important;
+    transform: scale(1.1);
+}
+
+/* ===== ADMIN AUTH ERROR ===== */
+.auth-error {
+    color: #f44336;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* ===== REMOVE BUTTONS ===== */
+.remove-btn {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.remove-btn:hover:not(:disabled) {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.remove-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.remove-btn.admin {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+}

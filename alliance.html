@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Alliance - Kingshot Vikings Event</title>
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="css/kingshot-bundle.css" as="style">
+    <link rel="preload" href="js/config.min.js" as="script">
+    <link rel="preload" href="js/kingshot-core.js" as="script">
+    <link rel="preload" href="logo.png" as="image">
+    
+    <!-- Bundled & Optimized CSS -->
+    <link rel="stylesheet" href="css/kingshot-bundle.css">
+    
+    <style id="allianceStyles">
+        /* ===== ALLIANCE-SPECIFIC STYLES (DYNAMICALLY POPULATED) ===== */
+        /* Styles will be injected by JavaScript based on alliance parameter */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-link">← Back to Alliance Selection</a>
+            
+            <h1><img src="logo.png" class="header-logo"> Kingshot Vikings Event</h1>
+            <div class="alliance-badge" id="allianceBadge">🔥 Loading Alliance...</div>
+            
+            <div class="admin-status" id="adminStatus">
+                Admin Mode Active
+                <span class="admin-user" id="adminUser"></span>
+            </div>
+            
+            <div id="connectionStatus" class="connection-status connecting">
+                <div class="status-dot"></div>
+                <span>Connecting to Firebase...</span>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalPlayers">0</span>
+                    <div class="stat-label" id="playersLabel">Players</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalGroups">0</span>
+                    <div class="stat-label">Battle Groups</div>
+                </div>
+            </div>
+            
+            <div class="online-count" id="onlineCount">
+                👥 Loading players...
+            </div>
+        </div>
+
+        <div class="admin-section" id="adminSection">
+            <h3>🛡️ Admin Access</h3>
+            <div class="admin-login">
+                <div class="admin-form-row">
+                    <input type="email" id="adminEmail" placeholder="Admin email..." maxlength="100" autocomplete="email">
+                    <input type="password" id="adminPassword" placeholder="Admin password..." maxlength="100" autocomplete="current-password">
+                </div>
+                <div class="admin-form-row">
+                    <button onclick="adminLogin()" id="adminLoginBtn">👑 Admin Login</button>
+                    <button onclick="adminLogout()" id="adminLogoutBtn" style="display: none;">🚪 Logout</button>
+                </div>
+                <div class="auth-error" id="authError"></div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="search-section">
+                <h3 id="searchTitle">🔍 Find Your Group</h3>
+                <div class="search-form">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search for your name..." maxlength="50">
+                    <button onclick="clearSearch()" class="clear-search-btn" id="clearSearchBtn" style="display: none;">✕</button>
+                </div>
+            </div>
+            
+            <hr style="border: 1px solid rgba(255,255,255,0.2); margin: 20px 0;">
+            
+            <div class="input-form">
+                <div class="input-group">
+                    <label class="input-label">Player Name</label>
+                    <input type="text" id="playerInput" class="player-input" placeholder="Enter your name..." maxlength="50" disabled>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">March limit</label>
+                    <select id="marchSelect" class="march-select" disabled>
+                        <option value="1">1 march</option>
+                        <option value="2">2 marches</option>
+                        <option value="3" selected>3 marches</option>
+                        <option value="4">4 marches</option>
+                        <option value="5">5 marches</option>
+                        <option value="6">6 marches</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Time Slot</label>
+                    <select id="timeSelect" class="march-select" disabled>
+                        <option value="at all times" selected>at all times</option>
+                        <option value="offline">offline</option>
+                    </select>
+                </div>
+                <button onclick="addPlayer()" class="add-btn" id="addBtn" disabled>🔥 Join Alliance</button>
+            </div>
+        </div>
+
+        <div id="groupsContainer" class="groups-container">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <h3>Loading Event Data...</h3>
+                <p>Connecting to Firebase Realtime Database</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-actions">
+        <button onclick="toggleAdminSection()" class="floating-action admin-toggle" id="adminToggleBtn" title="Admin Login">👑</button>
+        <button onclick="showTimeSlotManager()" class="floating-action time-slot" id="timeSlotBtn" title="Manage Time Slots (Admin Only)" style="display: none;">🕒</button>
+        <button onclick="clearAllPlayers()" class="floating-action clear" id="clearBtn" title="Clear All Players (Admin Only)" disabled style="display: none;">🗑️</button>
+    </div>
+
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+    
+    <!-- Optimized Configuration -->
+    <script src="js/config.min.js"></script>
+    
+    <!-- Kingshot Core Library -->
+    <script src="js/kingshot-core.js"></script>
+
+    <script>
+        // ===== DYNAMIC ALLIANCE TEMPLATE SYSTEM =====
+        
+        // Get alliance from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const allianceParam = urlParams.get('alliance') || 'COB'; // Default to COB if no parameter
+        const currentAlliance = allianceParam.toUpperCase();
+        
+        // Validate alliance parameter
+        const validAlliances = ['COB', 'LUX', 'GEW'];
+        if (!validAlliances.includes(currentAlliance)) {
+            console.warn(`Invalid alliance parameter: ${allianceParam}. Redirecting to COB.`);
+            window.location.href = '?alliance=COB';
+        }
+        
+        // Get alliance configuration
+        const allianceConfig = getAllianceConfig(currentAlliance);
+        const ALLIANCE_CONFIG = createAllianceConfigForCore(currentAlliance);
+        
+        // ===== DYNAMIC CONTENT POPULATION =====
+        
+        function initializeAlliancePage() {
+            // Update page title
+            document.getElementById('pageTitle').textContent = `${allianceConfig.fullName} - Kingshot Vikings Event`;
+            
+            // Update alliance badge
+            document.getElementById('allianceBadge').textContent = `${allianceConfig.emoji} ${allianceConfig.fullName}`;
+            
+            // Update stats label
+            document.getElementById('playersLabel').textContent = `${allianceConfig.name} Players`;
+            
+            // Update search title
+            document.getElementById('searchTitle').textContent = `🔍 Find Your ${allianceConfig.name} Group`;
+            
+            // Update online count loading text
+            document.getElementById('onlineCount').textContent = `👥 Loading ${allianceConfig.name} players...`;
+            
+            // Update join button
+            const addBtn = document.getElementById('addBtn');
+            addBtn.innerHTML = `${allianceConfig.emoji} Join ${allianceConfig.name}`;
+            
+            // Update clear button title
+            const clearBtn = document.getElementById('clearBtn');
+            clearBtn.title = `Clear All ${allianceConfig.name} Players (Admin Only)`;
+            
+            // Apply alliance-specific CSS styles
+            applyAllianceStyles();
+        }
+        
+        function applyAllianceStyles() {
+            const styleElement = document.getElementById('allianceStyles');
+            const styles = `
+                /* ${allianceConfig.name} Alliance color overrides */
+                .header::before,
+                .group::before {
+                    background: ${allianceConfig.colors.primary};
+                }
+                
+                .alliance-badge {
+                    background: ${allianceConfig.colors.badge};
+                }
+                
+                /* Additional alliance-specific styling can be added here */
+            `;
+            
+            styleElement.textContent = styles;
+        }
+        
+        // Initialize the page with alliance-specific content
+        document.addEventListener('DOMContentLoaded', initializeAlliancePage);
+        
+        // Initialize Kingshot with Alliance configuration
+        let kingshot = new KingshotCore(ALLIANCE_CONFIG);
+        
+        // Global function for time slot management
+        function showTimeSlotManager() {
+            if (kingshot && kingshot.showTimeSlotManager) {
+                kingshot.showTimeSlotManager();
+            } else {
+                console.error('showTimeSlotManager not available');
+            }
+        }
+    </script>
+</body>
+</html>
