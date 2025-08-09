@@ -1469,7 +1469,7 @@ class KingshotCore {
                                         ">
                                         ✅ Restore
                                     </button>
-                                    <button onclick="if(confirm('Permanently delete ${player.name}? This cannot be undone!')) { kingshot.permanentlyDeletePlayer('${player.name}'); this.closest('.deleted-player-item').remove(); }" 
+                                    <button onclick="kingshot.permanentlyDeletePlayer('${player.name}'); this.closest('.deleted-player-item').remove();" 
                                         class="delete-btn" style="
                                             background: linear-gradient(45deg, #f44336, #d32f2f);
                                             color: white;
