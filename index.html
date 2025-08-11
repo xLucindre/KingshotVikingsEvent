@@ -2164,36 +2164,46 @@
                 ref.on('value', (snapshot) => {
                     const data = snapshot.val() || {};
                     const playerCount = Object.keys(data).length;
-                    const groupCount = calculateGroupCount(data);
+                    const groupCount = calculateGroupCount(data, alliance);
 
                     updateStats(alliance, playerCount, groupCount);
                 });
             });
         }
 
-        function calculateGroupCount(playersData) {
-            const playersByMarchLimit = {};
-
-            // Group players by march limit
-            Object.entries(playersData).forEach(([playerName, playerData]) => {
-                // Skip deleted players
-                if (playerData.deleted) return;
-                
-                const marchLimit = playerData.marchLimit || 3;
-                if (!playersByMarchLimit[marchLimit]) {
-                    playersByMarchLimit[marchLimit] = [];
+        function getGroupCountFromCache(allianceName) {
+            // Try to get stats from localStorage (updated by alliance pages)
+            try {
+                const cached = localStorage.getItem(`alliance_stats_${allianceName}`);
+                if (cached) {
+                    const stats = JSON.parse(cached);
+                    // Use cached data if it's less than 30 seconds old
+                    if (Date.now() - stats.timestamp < 30000) {
+                        return stats.groupCount;
+                    }
                 }
-                playersByMarchLimit[marchLimit].push(playerName);
-            });
+            } catch (e) {
+                // Fall back to Firebase calculation
+            }
+            
+            return null; // No valid cache found
+        }
 
-            // Calculate total groups needed
-            let totalGroups = 0;
-            Object.entries(playersByMarchLimit).forEach(([marchLimit, players]) => {
-                const groupSize = marchLimit === 'offline' ? 4 : parseInt(marchLimit) + 1;
-                totalGroups += Math.ceil(players.length / groupSize);
-            });
+        function calculateGroupCount(playersData, allianceName) {
+            // First try to get from cache (updated by alliance pages)
+            const cachedGroupCount = getGroupCountFromCache(allianceName);
+            if (cachedGroupCount !== null) {
+                return cachedGroupCount;
+            }
+            
+            // Fallback: Simple approximation if no cache available
+            if (!playersData || Object.keys(playersData).length === 0) {
+                return 0;
+            }
 
-            return totalGroups;
+            const playerCount = Object.keys(playersData).length;
+            // Simple approximation: Most players have 3 marches, group size is 4 (3+1)
+            return Math.max(1, Math.ceil(playerCount / 4));
         }
 
         function updateStats(alliance, playerCount, groupCount) {
@@ -2413,9 +2423,36 @@
         }
 
         // ===== EVENT LISTENERS =====
+        // Listen for updates from alliance pages
+        function setupCrossTabUpdates() {
+            // Listen for postMessage from alliance page tabs
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'ALLIANCE_STATS_UPDATE') {
+                    const stats = event.data.data;
+                    updateStats(stats.alliance, stats.playerCount, stats.groupCount);
+                }
+            });
+            
+            // Listen for localStorage changes (when alliance pages update)
+            window.addEventListener('storage', function(e) {
+                if (e.key && e.key.startsWith('alliance_stats_')) {
+                    const allianceName = e.key.replace('alliance_stats_', '');
+                    try {
+                        const stats = JSON.parse(e.newValue);
+                        updateStats(allianceName, stats.playerCount, stats.groupCount);
+                    } catch (err) {
+                        // Ignore invalid data
+                    }
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize Firebase
             initializeFirebase();
+            
+            // Setup cross-tab communication
+            setupCrossTabUpdates();
 
             // Admin password enter key
             document.getElementById('adminPassword').addEventListener('keypress', (e) => {
