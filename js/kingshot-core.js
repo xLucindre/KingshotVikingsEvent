@@ -2109,34 +2109,6 @@ class KingshotCore {
     updateStats() {
         document.getElementById('totalPlayers').textContent = Object.keys(this.localPlayers).length;
         document.getElementById('totalGroups').textContent = this.groups.length;
-        
-        // Also update landing page stats if we're on an alliance page
-        this.updateLandingPageStats();
-    }
-    
-    updateLandingPageStats() {
-        // Send stats to landing page via Firebase or localStorage
-        try {
-            const stats = {
-                alliance: this.config.allianceName,
-                playerCount: Object.keys(this.localPlayers).length,
-                groupCount: this.groups.length,
-                timestamp: Date.now()
-            };
-            
-            // Store in localStorage so landing page can read it
-            localStorage.setItem(`alliance_stats_${this.config.allianceName}`, JSON.stringify(stats));
-            
-            // Also try to update landing page directly if it's open in another tab
-            if (typeof window !== 'undefined' && window.opener) {
-                window.opener.postMessage({
-                    type: 'ALLIANCE_STATS_UPDATE',
-                    data: stats
-                }, '*');
-            }
-        } catch (e) {
-            // Ignore errors - landing page update is optional
-        }
     }
 
     updateOnlineCount() {

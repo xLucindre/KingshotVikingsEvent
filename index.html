@@ -2163,47 +2163,130 @@
 
                 ref.on('value', (snapshot) => {
                     const data = snapshot.val() || {};
-                    const playerCount = Object.keys(data).length;
-                    const groupCount = calculateGroupCount(data, alliance);
+                    
+                    // Count only non-deleted players like kingshot-core.js does
+                    const nonDeletedPlayers = {};
+                    Object.entries(data).forEach(([playerName, playerData]) => {
+                        if (!playerData.deleted) {
+                            nonDeletedPlayers[playerName] = playerData;
+                        }
+                    });
+                    
+                    const playerCount = Object.keys(nonDeletedPlayers).length;
+                    const groupCount = calculateGroupCount(nonDeletedPlayers, alliance);
 
                     updateStats(alliance, playerCount, groupCount);
                 });
             });
         }
 
-        function getGroupCountFromCache(allianceName) {
-            // Try to get stats from localStorage (updated by alliance pages)
-            try {
-                const cached = localStorage.getItem(`alliance_stats_${allianceName}`);
-                if (cached) {
-                    const stats = JSON.parse(cached);
-                    // Use cached data if it's less than 30 seconds old
-                    if (Date.now() - stats.timestamp < 30000) {
-                        return stats.groupCount;
-                    }
-                }
-            } catch (e) {
-                // Fall back to Firebase calculation
-            }
-            
-            return null; // No valid cache found
-        }
-
         function calculateGroupCount(playersData, allianceName) {
-            // First try to get from cache (updated by alliance pages)
-            const cachedGroupCount = getGroupCountFromCache(allianceName);
-            if (cachedGroupCount !== null) {
-                return cachedGroupCount;
-            }
-            
-            // Fallback: Simple approximation if no cache available
             if (!playersData || Object.keys(playersData).length === 0) {
                 return 0;
             }
 
-            const playerCount = Object.keys(playersData).length;
-            // Simple approximation: Most players have 3 marches, group size is 4 (3+1)
-            return Math.max(1, Math.ceil(playerCount / 4));
+            // Use the same grouping logic as kingshot-core.js but optimized for performance
+            const players = [];
+            
+            Object.entries(playersData).forEach(([playerName, playerData]) => {
+                // Skip deleted players like kingshot-core.js does (should be none after pre-filtering)
+                if (playerData.deleted) return;
+                
+                const marchLimit = playerData.marchLimit ? playerData.marchLimit.toString().split('_newgroup_')[0] : '3';
+                const timeSlot = playerData.timeSlot || 'at all times';
+                const adminOverride = playerData.adminGroupOverride || null;
+                
+                players.push({
+                    name: playerName,
+                    marchLimit: marchLimit,
+                    timeSlot: timeSlot,
+                    adminOverride: adminOverride,
+                    timestamp: playerData.timestamp || 0
+                });
+            });
+
+            if (players.length === 0) return 0;
+
+            // Sort by timestamp (first come, first served)
+            players.sort((a, b) => a.timestamp - b.timestamp);
+
+            const processedPlayers = new Set();
+            let groupCount = 0;
+
+            // Handle admin-grouped players first
+            const adminGroups = {};
+            players.forEach(player => {
+                if (player.adminOverride && !processedPlayers.has(player.name)) {
+                    if (!adminGroups[player.adminOverride]) {
+                        adminGroups[player.adminOverride] = [];
+                    }
+                    adminGroups[player.adminOverride].push(player);
+                    processedPlayers.add(player.name);
+                }
+            });
+
+            // Count admin groups
+            groupCount += Object.keys(adminGroups).length;
+
+            // Handle regular players - simplified grouping
+            const regularPlayers = players.filter(p => !processedPlayers.has(p.name));
+            
+            // Group by march limit and time slot
+            const playerGroups = {};
+            regularPlayers.forEach(player => {
+                const key = `${player.marchLimit}-${player.timeSlot}`;
+                if (!playerGroups[key]) {
+                    playerGroups[key] = [];
+                }
+                playerGroups[key].push(player);
+            });
+
+            // Calculate groups for each march limit/time slot combination using timestamp proximity
+            Object.values(playerGroups).forEach(groupPlayers => {
+                if (groupPlayers.length === 0) return;
+                
+                // Sort by timestamp within this march limit/time slot group
+                groupPlayers.sort((a, b) => a.timestamp - b.timestamp);
+                
+                const marchLimit = parseInt(groupPlayers[0].marchLimit);
+                const groupSize = marchLimit + 1;
+                
+                // Use same timestamp proximity logic as reorganizeGroups()
+                const processedInThisGroup = new Set();
+                
+                groupPlayers.forEach(player => {
+                    if (processedInThisGroup.has(player.name)) return;
+                    
+                    // Find other players with same tags and close timestamps (10-second window)
+                    const candidatePlayers = groupPlayers.filter(otherPlayer => {
+                        if (processedInThisGroup.has(otherPlayer.name)) return false;
+                        return true;
+                    });
+                    
+                    let currentGroupTimestamp = player.timestamp;
+                    const currentGroupPlayers = [];
+                    
+                    for (const candidate of candidatePlayers) {
+                        const timeDiff = Math.abs(candidate.timestamp - currentGroupTimestamp);
+                        
+                        // If within 10 seconds and group not full
+                        if (timeDiff < 10000 && currentGroupPlayers.length < groupSize) {
+                            currentGroupPlayers.push(candidate);
+                            processedInThisGroup.add(candidate.name);
+                            
+                            // Update group timestamp range
+                            currentGroupTimestamp = Math.max(currentGroupTimestamp, candidate.timestamp);
+                        }
+                    }
+                    
+                    // Create one group for this timestamp cluster (even if not full)
+                    if (currentGroupPlayers.length > 0) {
+                        groupCount++;
+                    }
+                });
+            });
+
+            return groupCount;
         }
 
         function updateStats(alliance, playerCount, groupCount) {
@@ -2423,36 +2506,9 @@
         }
 
         // ===== EVENT LISTENERS =====
-        // Listen for updates from alliance pages
-        function setupCrossTabUpdates() {
-            // Listen for postMessage from alliance page tabs
-            window.addEventListener('message', function(event) {
-                if (event.data.type === 'ALLIANCE_STATS_UPDATE') {
-                    const stats = event.data.data;
-                    updateStats(stats.alliance, stats.playerCount, stats.groupCount);
-                }
-            });
-            
-            // Listen for localStorage changes (when alliance pages update)
-            window.addEventListener('storage', function(e) {
-                if (e.key && e.key.startsWith('alliance_stats_')) {
-                    const allianceName = e.key.replace('alliance_stats_', '');
-                    try {
-                        const stats = JSON.parse(e.newValue);
-                        updateStats(allianceName, stats.playerCount, stats.groupCount);
-                    } catch (err) {
-                        // Ignore invalid data
-                    }
-                }
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize Firebase
             initializeFirebase();
-            
-            // Setup cross-tab communication
-            setupCrossTabUpdates();
 
             // Admin password enter key
             document.getElementById('adminPassword').addEventListener('keypress', (e) => {
