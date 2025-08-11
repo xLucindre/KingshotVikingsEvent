@@ -2176,6 +2176,9 @@
 
             // Group players by march limit
             Object.entries(playersData).forEach(([playerName, playerData]) => {
+                // Skip deleted players
+                if (playerData.deleted) return;
+                
                 const marchLimit = playerData.marchLimit || 3;
                 if (!playersByMarchLimit[marchLimit]) {
                     playersByMarchLimit[marchLimit] = [];
