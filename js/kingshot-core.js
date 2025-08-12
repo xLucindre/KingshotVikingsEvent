@@ -65,6 +65,10 @@ class KingshotCore {
         this.currentPlayerName = '';
         this.currentAdminUser = null;
         this.currentSearchTerm = '';
+        
+        // Prevent duplicate reorganization
+        this.lastReorganizeHash = null;
+        this.isReorganizing = false;
     }
 
     // Apply alliance-specific styles
@@ -884,7 +888,6 @@ class KingshotCore {
 
         // Additional check to prevent race conditions
         if (document.getElementById('addBtn').disabled) {
-            console.log('Add button disabled, preventing duplicate creation');
             return;
         }
         
@@ -929,15 +932,11 @@ class KingshotCore {
         // Check if any compatible admin group has space - with strict limit validation
         for (const [adminGroupId, groupPlayers] of Object.entries(compatibleAdminGroups)) {
             const maxAllowed = parseInt(marchValue) + 1;
-            // Debug: Show all players in this admin group
-            console.log(`🔍 Admin group ${adminGroupId} has ${groupPlayers.length} total players:`, 
-                groupPlayers.map(p => `${Object.keys(this.localPlayers).find(name => this.localPlayers[name] === p)} (${p.marchLimit}/${p.timeSlot})`));
             
             // Only join if there's actually space (strict check)
             if (groupPlayers.length < maxAllowed) {
                 // Join this admin group
                 targetTimestamp = groupPlayers[0].timestamp + Math.random() * 1000;
-                console.log(`📥 New player ${playerName} joining non-full admin group ${adminGroupId} with ${groupPlayers.length}/${maxAllowed} players`);
                 
                 // Set the same admin override to join the group
                 const playerData = {
@@ -990,22 +989,11 @@ class KingshotCore {
                 const maxGroupSize = parseInt(marchValue) + 1; // Group size = march limit + 1
                 const currentGroupSize = playersInSameGroup.length;
                 
-                // Debug output
-                console.log(`🔍 Checking group for ${playerName}:`, {
-                    existingPlayer: existingPlayerData,
-                    maxGroupSize: maxGroupSize,
-                    currentGroupSize: currentGroupSize,
-                    playersInGroup: playersInSameGroup.map(([name]) => name)
-                });
-                
                 // We need to check if adding THIS player would exceed the limit
                 if (currentGroupSize + 1 <= maxGroupSize) {
                     // Join this group by using similar timestamp (within the 10-second window)
                     targetTimestamp = existingPlayerData.timestamp + Math.random() * 1000; // Small random offset to maintain order
-                    console.log(`✅ New player ${playerName} joining group with space: ${currentGroupSize + 1}/${maxGroupSize} after adding`);
                     break;
-                } else {
-                    console.log(`❌ Group would be overfull: ${currentGroupSize + 1}/${maxGroupSize} - skipping to next group or creating new one`);
                 }
             }
         }
@@ -1023,8 +1011,11 @@ class KingshotCore {
                 const displayText = `${marchValue} marches`;
                 const timeText = timeValue === 'offline' ? 'offline' : `at ${timeValue}`;
                 this.showNotification(`${playerName} joined ${this.config.allianceName} with ${displayText} ${timeText}!`, 'success');
+                
+                // Firebase will automatically trigger reorganizeGroups via the value listener
+                // DO NOT call reorganizeGroups here - it would cause duplicates
             } else {
-                // Fallback to local mode
+                // Fallback to local mode - only here we manually manage the data
                 const playerData = {
                     marchLimit: marchValue,
                     timeSlot: timeValue,
@@ -1033,7 +1024,7 @@ class KingshotCore {
                 this.localPlayers[playerName] = playerData;
                 this.allPlayersData[playerName] = playerData; // Keep in sync
                 this.currentPlayerName = playerName;
-                this.reorganizeGroups();
+                this.reorganizeGroups(); // Only call this in offline mode
                 
                 const displayText = `${marchValue} marches`;
                 const timeText = timeValue === 'offline' ? 'offline' : `at ${timeValue}`;
@@ -1144,6 +1135,19 @@ class KingshotCore {
 
     // Group organization
     reorganizeGroups() {
+        // Prevent concurrent reorganization
+        if (this.isReorganizing) {
+            return;
+        }
+        
+        // Create a hash of current player data to detect duplicates
+        const currentHash = JSON.stringify(Object.keys(this.localPlayers).sort());
+        if (this.lastReorganizeHash === currentHash) {
+            return;
+        }
+        
+        this.isReorganizing = true;
+        this.lastReorganizeHash = currentHash;
         this.groups = [];
         
         // Create an array of all players with their info
@@ -1228,10 +1232,11 @@ class KingshotCore {
             
             const groupSize = parseInt(player.marchLimit) + 1;
             
-            // Find other players with same tags
+            // Find OTHER players with same tags (exclude the current player!)
             const candidatePlayers = allPlayers.filter(otherPlayer => {
                 if (processedPlayers.has(otherPlayer.name)) return false;
                 if (otherPlayer.adminOverride) return false; // Skip admin-overridden players
+                if (otherPlayer.name === player.name) return false; // CRITICAL: Exclude the current player
                 if (otherPlayer.marchLimit !== player.marchLimit) return false;
                 if (otherPlayer.timeSlot !== player.timeSlot) return false;
                 return true;
@@ -1290,6 +1295,9 @@ class KingshotCore {
         });
         
         this.updateDisplay();
+        
+        // Reset reorganization flag
+        this.isReorganizing = false;
     }
 
     // Admin functionality
