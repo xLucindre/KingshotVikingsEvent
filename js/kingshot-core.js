@@ -882,6 +882,15 @@ class KingshotCore {
             return;
         }
 
+        // Additional check to prevent race conditions
+        if (document.getElementById('addBtn').disabled) {
+            console.log('Add button disabled, preventing duplicate creation');
+            return;
+        }
+        
+        // Disable button to prevent rapid clicks
+        document.getElementById('addBtn').disabled = true;
+
         // Find existing players with same tags to join their group
         let targetTimestamp = Date.now();
         
@@ -952,6 +961,8 @@ class KingshotCore {
                     
                     input.value = '';
                     input.focus();
+                    // Re-enable button before returning
+                    document.getElementById('addBtn').disabled = false;
                     return; // Exit early - player was added to admin group
                     
                 } catch (error) {
@@ -1039,6 +1050,9 @@ class KingshotCore {
         } catch (error) {
             console.error('Error adding player:', error);
             this.showNotification('Failed to add player. Please try again.', 'error');
+        } finally {
+            // Re-enable button
+            document.getElementById('addBtn').disabled = false;
         }
     }
 
