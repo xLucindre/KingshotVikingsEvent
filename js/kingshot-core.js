@@ -894,24 +894,41 @@ class KingshotCore {
         // Also check admin-override groups that still have space
         const adminGroupsWithSpace = {};
         Object.entries(this.localPlayers).forEach(([playerName, playerData]) => {
-            const originalMarchLimit = playerData.marchLimit.toString().split('_newgroup_')[0];
-            if (playerData.adminGroupOverride && 
-                originalMarchLimit === marchValue && 
-                playerData.timeSlot === timeValue) {
-                
+            if (playerData.adminGroupOverride) {
+                // Count ALL players in admin groups, regardless of their original tags
                 if (!adminGroupsWithSpace[playerData.adminGroupOverride]) {
                     adminGroupsWithSpace[playerData.adminGroupOverride] = [];
                 }
                 adminGroupsWithSpace[playerData.adminGroupOverride].push(playerData);
             }
         });
+        
+        // Filter admin groups to only those that match the new player's tags AND have space
+        const compatibleAdminGroups = {};
+        Object.entries(adminGroupsWithSpace).forEach(([adminGroupId, allPlayersInGroup]) => {
+            // Check if this admin group is compatible with the new player's tags
+            const hasCompatiblePlayer = allPlayersInGroup.some(playerData => {
+                const originalMarchLimit = playerData.marchLimit.toString().split('_newgroup_')[0];
+                return originalMarchLimit === marchValue && playerData.timeSlot === timeValue;
+            });
+            
+            if (hasCompatiblePlayer) {
+                compatibleAdminGroups[adminGroupId] = allPlayersInGroup;
+            }
+        });
 
-        // Check if any admin group has space
-        for (const [adminGroupId, groupPlayers] of Object.entries(adminGroupsWithSpace)) {
-            if (groupPlayers.length < parseInt(marchValue) + 1) {
+        // Check if any compatible admin group has space - with strict limit validation
+        for (const [adminGroupId, groupPlayers] of Object.entries(compatibleAdminGroups)) {
+            const maxAllowed = parseInt(marchValue) + 1;
+            // Debug: Show all players in this admin group
+            console.log(`🔍 Admin group ${adminGroupId} has ${groupPlayers.length} total players:`, 
+                groupPlayers.map(p => `${Object.keys(this.localPlayers).find(name => this.localPlayers[name] === p)} (${p.marchLimit}/${p.timeSlot})`));
+            
+            // Only join if there's actually space (strict check)
+            if (groupPlayers.length < maxAllowed) {
                 // Join this admin group
                 targetTimestamp = groupPlayers[0].timestamp + Math.random() * 1000;
-                console.log(`📥 New player ${playerName} joining admin group ${adminGroupId} with ${groupPlayers.length} players`);
+                console.log(`📥 New player ${playerName} joining non-full admin group ${adminGroupId} with ${groupPlayers.length}/${maxAllowed} players`);
                 
                 // Set the same admin override to join the group
                 const playerData = {
@@ -958,11 +975,26 @@ class KingshotCore {
                            timeDiff < 10000; // Same group threshold (10 seconds)
                 });
                 
-                if (playersInSameGroup.length < parseInt(marchValue)) {
+                // CRITICAL: Only join if group has ACTUAL space (leave room for the new player)
+                const maxGroupSize = parseInt(marchValue) + 1; // Group size = march limit + 1
+                const currentGroupSize = playersInSameGroup.length;
+                
+                // Debug output
+                console.log(`🔍 Checking group for ${playerName}:`, {
+                    existingPlayer: existingPlayerData,
+                    maxGroupSize: maxGroupSize,
+                    currentGroupSize: currentGroupSize,
+                    playersInGroup: playersInSameGroup.map(([name]) => name)
+                });
+                
+                // We need to check if adding THIS player would exceed the limit
+                if (currentGroupSize + 1 <= maxGroupSize) {
                     // Join this group by using similar timestamp (within the 10-second window)
                     targetTimestamp = existingPlayerData.timestamp + Math.random() * 1000; // Small random offset to maintain order
-                    console.log(`📥 New player ${playerName} joining existing group with timestamp ${targetTimestamp}`);
+                    console.log(`✅ New player ${playerName} joining group with space: ${currentGroupSize + 1}/${maxGroupSize} after adding`);
                     break;
+                } else {
+                    console.log(`❌ Group would be overfull: ${currentGroupSize + 1}/${maxGroupSize} - skipping to next group or creating new one`);
                 }
             }
         }
@@ -1139,7 +1171,7 @@ class KingshotCore {
             }
         });
         
-        // Create groups for admin-overridden players
+        // Create groups for admin-overridden players with strict limit enforcement
         Object.values(adminGroups).forEach(groupPlayers => {
             if (groupPlayers.length === 0) return;
             
@@ -1147,6 +1179,9 @@ class KingshotCore {
             groupPlayers.sort((a, b) => a.timestamp - b.timestamp);
             
             const groupSize = parseInt(groupPlayers[0].marchLimit) + 1;
+            
+            // Just validate that admin groups don't exceed limits during display
+            // No player removal - this should not happen if validation works correctly
             
             // Check if any player has a custom group name
             let customGroupName = null;
@@ -1192,13 +1227,17 @@ class KingshotCore {
             candidatePlayers.sort((a, b) => a.timestamp - b.timestamp);
             
             // Group by timestamp proximity - players within 10 seconds belong together
-            const groupPlayers = [];
+            // ALWAYS start with the original player
+            const groupPlayers = [player];
+            processedPlayers.add(player.name);
             let currentGroupTimestamp = player.timestamp;
             
+            // Now add other candidates, but respect the group size limit
             for (const candidate of candidatePlayers) {
                 const timeDiff = Math.abs(candidate.timestamp - currentGroupTimestamp);
                 
                 // If timestamp is close to current group's range, add to group
+                // BUT only if we haven't reached the group size limit
                 if (timeDiff < 10000 && groupPlayers.length < groupSize) {
                     groupPlayers.push(candidate);
                     processedPlayers.add(candidate.name);
@@ -1208,12 +1247,6 @@ class KingshotCore {
                         currentGroupTimestamp = candidate.timestamp;
                     }
                 }
-            }
-            
-            // If no players were added to group, add the original player
-            if (groupPlayers.length === 0) {
-                groupPlayers.push(player);
-                processedPlayers.add(player.name);
             }
             
             // Check if any player in this group has a custom group name
@@ -1707,8 +1740,29 @@ class KingshotCore {
         const targetGroup = this.groups[targetGroupIndex];
         if (!targetGroup) return;
 
-        if (targetGroup.players.length >= targetGroup.maxSize) {
-            this.showNotification("Target group is full!", "error");
+        // Enhanced group limit validation - including for admin-created groups
+        const actualMaxSize = parseInt(targetGroup.marchLimit) + 1; // Always recalculate based on march limit
+        if (targetGroup.players.length >= actualMaxSize) {
+            this.showNotification(`Target group is full! (${targetGroup.players.length}/${actualMaxSize} players) - Cannot add more players. Create a new group instead.`, "error");
+            return;
+        }
+
+        // Double-check with real-time data from Firebase/local storage
+        let currentGroupSize = 0;
+        const targetGroupId = targetGroup.players[0]?.adminOverride;
+        if (targetGroupId) {
+            // Count all players with the same admin override
+            Object.values(this.localPlayers).forEach(playerData => {
+                if (playerData.adminGroupOverride === targetGroupId) {
+                    currentGroupSize++;
+                }
+            });
+        } else {
+            currentGroupSize = targetGroup.players.length;
+        }
+
+        if (currentGroupSize >= actualMaxSize) {
+            this.showNotification(`Target group is actually full! (${currentGroupSize}/${actualMaxSize} players) - Please create a new group.`, "error");
             return;
         }
 
